@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell -c \"Get-ChildItem\")",
+      "Bash(cd \"/c/Users/JULIETH ANDRADE/Desktop/Website_Servicio/vite-project\" && grep -rl \"data/obras\" src)",
+      "Read(//c/c/Users/JULIETH ANDRADE/Desktop/Website_Servicio/vite-project/**)",
+      "Bash(cd \"/c/Users/JULIETH ANDRADE/Desktop/Website_Servicio/vite-project\" && rm -rf node_modules/.vite)"
+    ],
+    "additionalDirectories": [
+      "c:\\c\\Users\\JULIETH ANDRADE\\Desktop\\Website_Servicio\\vite-project\\node_modules"
+    ]
+  }
+}

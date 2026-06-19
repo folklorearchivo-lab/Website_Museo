@@ -1,0 +1,11 @@
+@import 'tailwindcss';
+@config "../tailwind.config.js";
+
+@layer base {
+  body {
+    margin: 0;
+    font-family: 'Work Sans', system-ui, sans-serif;
+    background-color: #fff9f3;
+    color: #443223;
+  }
+}
