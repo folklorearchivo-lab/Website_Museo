@@ -1,9 +1,9 @@
 function TextInput({ label, name, type = 'text', required = false, value, onChange, placeholder }) {
   return (
-    <label className="flex flex-col gap-1.5">
-      <span className="font-sans text-xs uppercase tracking-wider text-secondary">
+    <label className="flex flex-col gap-2">
+      <span className="font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir">
         {label}
-        {required && <span className="text-tertiary"> *</span>}
+        {required && <span> *</span>}
       </span>
       <input
         type={type}
@@ -12,7 +12,7 @@ function TextInput({ label, name, type = 'text', required = false, value, onChan
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="border-0 border-b-2 border-cafe-noir/40 bg-transparent px-1 py-2 font-sans text-cafe-noir placeholder:text-secondary/50 focus:outline-none focus:border-primary transition-colors"
+        className="w-full rounded-xl border border-cafe-noir/30 bg-white/50 px-4 py-2.5 font-sans text-cafe-noir placeholder:text-cafe-noir/60 focus:border-cafe-noir focus:outline-none focus:ring-1 focus:ring-cafe-noir transition-colors"
       />
     </label>
   )

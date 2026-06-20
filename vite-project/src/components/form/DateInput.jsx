@@ -1,9 +1,9 @@
 function DateInput({ label, name, required = false, value, onChange }) {
   return (
-    <label className="flex flex-col gap-1.5">
-      <span className="font-sans text-xs uppercase tracking-wider text-secondary">
+    <label className="flex flex-col gap-2">
+      <span className="font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir">
         {label}
-        {required && <span className="text-tertiary"> *</span>}
+        {required && <span> *</span>}
       </span>
       <div className="relative">
         <input
@@ -12,10 +12,10 @@ function DateInput({ label, name, required = false, value, onChange }) {
           required={required}
           value={value}
           onChange={onChange}
-          className="w-full border-0 border-b-2 border-cafe-noir/40 bg-transparent px-1 py-2 pr-7 font-sans text-cafe-noir transition-colors focus:outline-none focus:border-primary [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:w-7 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+          className="w-full appearance-none rounded-xl border border-cafe-noir/30 bg-white/50 px-4 py-2.5 pr-10 font-sans text-cafe-noir focus:border-cafe-noir focus:outline-none focus:ring-1 focus:ring-cafe-noir transition-colors [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:w-10 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
         />
         <svg
-          className="pointer-events-none absolute right-1 top-1/2 h-4 w-4 -translate-y-1/2 text-primary"
+          className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-cafe-noir"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"

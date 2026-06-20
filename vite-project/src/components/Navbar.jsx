@@ -3,11 +3,12 @@ import logoM from '../assets/LogoM.png'
 
 const links = [
   { href: '#inicio', label: 'Inicio' },
+  { href: '#nosotros', label: 'Nosotros' },
   { href: '#galeria', label: 'Galería' },
-  { href: '#registro', label: 'Registro' },
+  { href: '#eventos', label: 'Eventos' },
 ]
 
-function Navbar() {
+function Navbar({ onOpenRegister }) {
   const [menuAbierto, setMenuAbierto] = useState(false)
 
   const cerrarMenu = () => setMenuAbierto(false)
@@ -35,12 +36,12 @@ function Navbar() {
           ))}
         </ul>
 
-        <a
-          href="#registro"
+        <button
+          onClick={onOpenRegister}
           className="hidden rounded-full bg-tertiary px-6 py-2 font-sans text-xs font-semibold uppercase tracking-wide text-linen shadow-md transition-colors hover:bg-cafe-noir md:inline-block"
         >
           Soy Cultor / Registrarme
-        </a>
+        </button>
 
         {/* Botón hamburguesa, solo en móvil */}
         <button
@@ -76,13 +77,12 @@ function Navbar() {
               </li>
             ))}
             <li className="pt-2">
-              <a
-                href="#registro"
-                onClick={cerrarMenu}
-                className="block rounded-full bg-tertiary px-6 py-2.5 text-center font-sans text-xs font-semibold uppercase tracking-wide text-linen shadow-md"
+              <button
+                onClick={() => { cerrarMenu(); onOpenRegister(); }}
+                className="block w-full rounded-full bg-tertiary px-6 py-2.5 text-center font-sans text-xs font-semibold uppercase tracking-wide text-linen shadow-md"
               >
                 Soy Cultor / Registrarme
-              </a>
+              </button>
             </li>
           </ul>
         </div>

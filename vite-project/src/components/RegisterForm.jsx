@@ -1,4 +1,5 @@
 import { useState } from 'react'
+
 import cesteria2Img from '../assets/Cesteria 2.jpeg'
 import TextInput from './form/TextInput'
 import SelectInput from './form/SelectInput'
@@ -58,20 +59,22 @@ const initialFormState = {
 
 function SectionTitle({ children }) {
   return (
-    <legend className="w-full pb-4">
-      <span className="inline-block rounded-full bg-warm-sand/70 px-4 py-1.5 font-serif text-lg text-cafe-noir shadow-sm backdrop-blur-sm">
+    <div className="w-full mb-6">
+      <span className="inline-block rounded-full border border-white/30 bg-[#4A3219] px-4 py-1.5 font-sans font-medium text-sm text-white">
         {children}
       </span>
-    </legend>
+    </div>
   )
 }
 
-function RegisterForm() {
+function RegisterForm({ isOpen, onClose }) {
   const [form, setForm] = useState(initialFormState)
   const [funcionalidadMarcada, setFuncionalidadMarcada] = useState([])
   const [recaudosMarcados, setRecaudosMarcados] = useState([])
   const [archivos, setArchivos] = useState([])
   const [enviado, setEnviado] = useState(false)
+
+  if (!isOpen) return null;
 
   const handleChange = (event) => {
     const { name, value } = event.target
@@ -92,32 +95,36 @@ function RegisterForm() {
   }
 
   return (
-    <section id="registro" className="relative scroll-mt-20 overflow-hidden bg-[#8E7257] py-28">
-      {/* Fotografía de cestería de fondo en toda la sección, con encuadre más abierto (menos cerca/zoom) */}
-      <div
-        className="absolute inset-0 bg-cover bg-top bg-no-repeat sepia-[.3] contrast-[1] saturate-[.9]"
-        style={{ backgroundImage: `url(${cesteria2Img})` }}
-      />
-      {/* Velo de color: arranca en el tono exacto donde termina la Galería y se funde hacia abajo, sin opacar del todo la foto */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#A98B6E]/90 via-[#8E7257]/80 to-[#8E7257]/95" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-[#3a200d]/50 backdrop-blur-md">
+      <div className="relative w-full max-w-4xl h-auto max-h-[90vh] rounded-[2rem] bg-[#F4F0E6] shadow-2xl shadow-black/50 flex flex-col">
 
-      <div className="relative mx-auto max-w-3xl px-6">
-        <div className="text-center">
-          <span className="font-sans text-xs uppercase tracking-[0.25em] text-cafe-noir/70">
+        {/* Botón de cerrar */}
+        <button 
+          onClick={onClose}
+          className="absolute top-6 right-6 z-20 flex h-10 w-10 items-center justify-center rounded-full text-cafe-noir transition-opacity hover:opacity-70"
+        >
+          <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        {/* Contenido scrollable del modal con barra de desplazamiento estilizada */}
+        <div className="relative z-10 w-full overflow-y-auto px-6 py-10 sm:px-12 sm:py-14 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-cafe-noir/20 hover:scrollbar-thumb-cafe-noir/40 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-cafe-noir/20 hover:[&::-webkit-scrollbar-thumb]:bg-cafe-noir/40">
+        <div className="text-center text-cafe-noir">
+          <span className="font-sans text-xs uppercase tracking-[0.1em] text-cafe-noir/80">
             Registro Nacional de Artesanos
           </span>
-          <h2 className="mt-4 font-serif text-4xl text-cafe-noir lg:text-5xl">
+          <h2 className="mt-1 font-sans font-semibold tracking-tight text-3xl sm:text-4xl text-cafe-noir">
             Solicitud de Inscripción
           </h2>
-          <div className="mx-auto mt-6 h-px w-20 bg-cafe-noir/30" />
-          <p className="mt-6 font-sans text-cafe-noir/80">
-            Museo del Táchira · Archivo Táchira: Folklore y Patrimonio
+          <p className="mt-2 font-sans text-sm text-cafe-noir/90">
+            Museo del Táchira · Archivo regional de folklore y patrimonio cultural "Luis Felipe Ramón y Rivera"
           </p>
         </div>
 
-        <div className="mt-12 rounded-3xl border border-white/30 bg-white/40 p-5 shadow-2xl shadow-cafe-noir/20 backdrop-blur-md sm:p-8 lg:p-12">
+        <div className="mt-10">
           {enviado && (
-            <div className="mb-8 rounded-2xl border border-white/40 bg-white/40 px-4 py-3 text-center font-sans text-sm text-cafe-noir backdrop-blur-sm">
+            <div className="mb-8 rounded-2xl border border-cafe-noir/20 bg-white/50 px-4 py-3 text-center font-sans text-sm text-cafe-noir">
               Tu solicitud fue recibida. El equipo del museo la revisará y se
               pondrá en contacto contigo.
             </div>
@@ -125,9 +132,9 @@ function RegisterForm() {
 
           <form onSubmit={handleSubmit} className="space-y-14">
           {/* Sección I: Datos Personales */}
-          <fieldset>
+          <div className="space-y-0">
             <SectionTitle>I. Datos Personales</SectionTitle>
-            <div className="mt-8 grid grid-cols-1 gap-x-8 gap-y-7 md:grid-cols-2">
+            <div className="mt-2 grid grid-cols-1 gap-x-8 gap-y-7 md:grid-cols-2">
               <TextInput
                 label="Nombres"
                 name="nombres"
@@ -192,12 +199,12 @@ function RegisterForm() {
                 placeholder="nombre@correo.com"
               />
             </div>
-          </fieldset>
+          </div>
 
           {/* Sección II: Oficio, Producto y Materia Prima */}
-          <fieldset>
+          <div className="space-y-0">
             <SectionTitle>II. Características de Oficio y Producto</SectionTitle>
-            <div className="mt-8 grid grid-cols-1 gap-x-8 gap-y-7 md:grid-cols-2">
+            <div className="mt-2 grid grid-cols-1 gap-x-8 gap-y-7 md:grid-cols-2">
               <SelectInput
                 label="Oficio"
                 name="oficio"
@@ -237,7 +244,7 @@ function RegisterForm() {
             </div>
 
             <div className="mt-8">
-              <span className="font-sans text-xs uppercase tracking-wider text-secondary">
+              <span className="font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir">
                 Clasificación
               </span>
               <div className="mt-3 flex flex-wrap gap-6">
@@ -255,7 +262,7 @@ function RegisterForm() {
             </div>
 
             <div className="mt-8">
-              <span className="font-sans text-xs uppercase tracking-wider text-secondary">
+              <span className="font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir">
                 Funcionalidad
               </span>
               <div className="mt-3 flex flex-wrap gap-6">
@@ -273,7 +280,7 @@ function RegisterForm() {
             </div>
 
             <div className="mt-8">
-              <span className="font-sans text-xs uppercase tracking-wider text-secondary">
+              <span className="font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir">
                 Comercialización
               </span>
               <div className="mt-3 flex flex-wrap gap-6">
@@ -298,13 +305,13 @@ function RegisterForm() {
                 />
               </div>
             </div>
-          </fieldset>
+          </div>
 
           {/* Sección III: Declaración y Recaudos */}
-          <fieldset>
+          <div className="space-y-0">
             <SectionTitle>III. Declaración de Buena Fe y Recaudos</SectionTitle>
 
-            <p className="mt-8 font-sans text-sm leading-relaxed text-primary">
+            <p className="mt-2 font-sans text-sm leading-relaxed text-cafe-noir">
               Declaro que la información suministrada en este formulario es
               verídica y autorizo al Museo del Táchira a verificarla con
               fines de registro patrimonial.
@@ -322,7 +329,7 @@ function RegisterForm() {
             </div>
 
             <div className="mt-8">
-              <span className="font-sans text-xs uppercase tracking-wider text-secondary">
+              <span className="font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir">
                 Recaudos exigidos
               </span>
               <div className="mt-3 space-y-2.5">
@@ -340,27 +347,28 @@ function RegisterForm() {
             </div>
 
             <div className="mt-8">
-              <span className="font-sans text-xs uppercase tracking-wider text-secondary">
+              <span className="font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir">
                 Documentos de soporte
               </span>
               <div className="mt-3">
                 <Dropzone files={archivos} onFilesChange={setArchivos} />
               </div>
             </div>
-          </fieldset>
+          </div>
 
           <div className="flex justify-center pt-4 sm:justify-end">
             <button
               type="submit"
-              className="w-full rounded-full bg-primary px-10 py-3.5 font-sans text-sm font-semibold uppercase tracking-wider text-linen shadow-md transition-colors hover:bg-cafe-noir sm:w-auto"
+              className="w-full rounded-full bg-cafe-noir px-10 py-3.5 font-sans text-sm font-semibold uppercase tracking-wider text-white shadow-md transition-opacity hover:opacity-80 sm:w-auto"
             >
               Enviar solicitud
             </button>
           </div>
           </form>
         </div>
+        </div>
       </div>
-    </section>
+    </div>
   )
 }
 

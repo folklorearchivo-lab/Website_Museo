@@ -15,6 +15,7 @@ export default {
         secondary: '#7C7960',
         tertiary: '#755151',
         'cafe-noir': '#443223',
+        'gallery-cream': '#FFEEE0',
       },
       fontFamily: {
         serif: ['"Libre Caslon Text"', 'Georgia', 'Cambria', 'serif'],

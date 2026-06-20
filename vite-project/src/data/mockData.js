@@ -5,6 +5,11 @@
 
 import cesteriaImg from '../assets/Cesteria.jpeg'
 import cesteria2Img from '../assets/Cesteria 2.jpeg'
+import tinajaImg from '../assets/tinaja.png'
+import mascaraImg from '../assets/mascara.png'
+import lienzoImg from '../assets/lienzo.png'
+import ruanaImg from '../assets/ruana.png'
+import jarronImg from '../assets/jarron.png'
 
 export const categorias = [
   'Todas',
@@ -41,7 +46,7 @@ export const obrasIniciales = [
     categoria: 'Cerámica',
     autor: 'Ramón Antonio Contreras Pérez',
     ubicacion: 'Capacho, Táchira',
-    imagenUrl: null,
+    imagenUrl: tinajaImg,
   },
   {
     id: 2,
@@ -57,7 +62,7 @@ export const obrasIniciales = [
     categoria: 'Talla en madera',
     autor: 'José Antonio Mora',
     ubicacion: 'Lobatera, Táchira',
-    imagenUrl: null,
+    imagenUrl: mascaraImg,
   },
   {
     id: 4,
@@ -65,7 +70,7 @@ export const obrasIniciales = [
     categoria: 'Pintura',
     autor: 'Carmen Rosa Duque',
     ubicacion: 'Pregonero, Táchira',
-    imagenUrl: null,
+    imagenUrl: lienzoImg,
   },
   {
     id: 5,
@@ -73,7 +78,7 @@ export const obrasIniciales = [
     categoria: 'Textiles',
     autor: 'Isabel Rangel',
     ubicacion: 'Queniquea, Táchira',
-    imagenUrl: null,
+    imagenUrl: ruanaImg,
   },
   {
     id: 6,
@@ -81,6 +86,27 @@ export const obrasIniciales = [
     categoria: 'Cerámica',
     autor: 'Pedro Vivas',
     ubicacion: 'Independencia, Táchira',
-    imagenUrl: null,
+    imagenUrl: jarronImg,
   },
+]
+
+export const eventosProgramados = [
+  {
+    id: 1,
+    titulo: 'Exposición Actual: Raíces de Los Andes',
+    descripcion: 'Una muestra destacada de artesanía andina seleccionada para este momento.',
+    fechaInicio: '2026-06-15',
+    fechaFin: '2026-06-30',
+    activa: true,
+    obrasIds: [1, 3, 5],
+  },
+  {
+    id: 2,
+    titulo: 'Muestra Textil y Cestería',
+    descripcion: 'Obras destacadas en textiles y cestería de nuestros cultores.',
+    fechaInicio: '2026-08-10',
+    fechaFin: '2026-08-20',
+    activa: false,
+    obrasIds: [2, 5],
+  }
 ]

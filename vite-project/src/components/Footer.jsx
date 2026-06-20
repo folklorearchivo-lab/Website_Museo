@@ -1,9 +1,3 @@
-const enlaces = [
-  { href: '#inicio', label: 'Inicio' },
-  { href: '#galeria', label: 'Galería' },
-  { href: '#registro', label: 'Registro' },
-]
-
 const apoyadoPor = ['Dirección de Cultura', 'Museo del Táchira', 'UNEFA']
 
 function Footer() {
@@ -17,7 +11,7 @@ function Footer() {
       />
       <div className="absolute inset-0 bg-cafe-noir/85" />
 
-      <div className="relative z-10 mx-auto grid max-w-6xl gap-10 border-b border-warm-sand/15 px-4 py-12 sm:grid-cols-3 sm:gap-12 sm:px-6 sm:py-16">
+      <div className="relative z-10 mx-auto grid max-w-5xl gap-10 border-b border-warm-sand/15 px-4 py-12 sm:grid-cols-2 sm:gap-16 sm:px-6 sm:py-16">
         <div>
           <h3 className="font-serif text-xl text-linen">Archivo Táchira</h3>
           <p className="mt-3 max-w-xs font-sans text-sm leading-relaxed text-warm-sand/80">
@@ -25,24 +19,6 @@ function Footer() {
             del Táchira para preservar el oficio y la historia de nuestros
             cultores.
           </p>
-        </div>
-
-        <div>
-          <h4 className="font-sans text-xs font-bold uppercase tracking-[0.2em] text-warm-sand">
-            Enlaces rápidos
-          </h4>
-          <ul className="mt-4 space-y-2">
-            {enlaces.map((enlace) => (
-              <li key={enlace.href}>
-                <a
-                  href={enlace.href}
-                  className="font-sans text-sm text-warm-sand/90 transition-colors hover:text-linen"
-                >
-                  {enlace.label}
-                </a>
-              </li>
-            ))}
-          </ul>
         </div>
 
         <div>
@@ -63,7 +39,7 @@ function Footer() {
       </div>
 
       <div className="relative z-10 px-6 py-5 text-center font-sans text-xs text-warm-sand/60">
-        © {new Date().getFullYear()} Museo del Táchira · Archivo Táchira: Folklore y Patrimonio
+        © {new Date().getFullYear()} Museo del Táchira · Archivo regional de folklore y patrimonio cultural "Luis Felipe Ramón y Rivera"
       </div>
     </footer>
   )
