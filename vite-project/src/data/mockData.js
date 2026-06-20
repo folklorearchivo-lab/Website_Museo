@@ -28,6 +28,13 @@ export const cultoresIniciales = [
     oficio: 'Cestería',
     municipio: 'Ureña',
     fotoUrl: cesteriaImg,
+    bio: 'Artesana especializada en técnicas de tejido tradicionales con caña brava y bejuco. Heredera de un linaje de tejedores de la frontera.',
+    estado: 'Miembro Activo',
+    obrasCount: 12,
+    contacto: {
+      email: 'mariajose@cultores.ta.gob.ve',
+      telefono: '+58 414 1234567'
+    }
   },
   {
     id: 2,
@@ -36,7 +43,29 @@ export const cultoresIniciales = [
     oficio: 'Alfarería y cerámica',
     municipio: 'Capacho (Libertador)',
     fotoUrl: null,
+    bio: 'Maestro alfarero con más de 40 años de trayectoria. Reconocido por sus tinajas utilitarias y piezas decorativas con barro rojo local.',
+    estado: 'Maestro Honorario',
+    obrasCount: 34,
+    contacto: {
+      email: 'ramon.alfarero@gmail.com',
+      telefono: '+58 424 7654321'
+    }
   },
+  {
+    id: 3,
+    nombres: 'Carmen Rosa',
+    apellidos: 'Duque',
+    oficio: 'Pintura',
+    municipio: 'Pregonero',
+    fotoUrl: lienzoImg,
+    bio: 'Artista visual autodidacta enfocada en retratar los paisajes del páramo tachirense y la vida campesina a través del óleo.',
+    estado: 'Miembro Activo',
+    obrasCount: 8,
+    contacto: {
+      email: 'carmen.duque.arte@hotmail.com',
+      telefono: '+58 412 9876543'
+    }
+  }
 ]
 
 export const obrasIniciales = [
@@ -108,5 +137,40 @@ export const eventosProgramados = [
     fechaFin: '2026-08-20',
     activa: false,
     obrasIds: [2, 5],
+  }
+]
+
+export const notificacionesMock = [
+  {
+    id: 1,
+    tipo: 'invitacion',
+    titulo: 'Invitación a Exposición',
+    mensaje: 'Has sido seleccionado para participar en la muestra "Raíces de Los Andes" este mes.',
+    tiempo: 'Hace 2 horas',
+    leida: false
+  },
+  {
+    id: 2,
+    tipo: 'aprobado',
+    titulo: 'Obra Aprobada',
+    mensaje: 'Tu obra "Cestería de Ureña" ha sido revisada y agregada exitosamente al archivo digital.',
+    tiempo: 'Hace 1 día',
+    leida: true
+  },
+  {
+    id: 3,
+    tipo: 'pendiente',
+    titulo: 'Revisión en Proceso',
+    mensaje: 'El administrador está revisando tu nueva obra "Canasta Tradicional". Te avisaremos pronto.',
+    tiempo: 'Hace 3 días',
+    leida: true
+  },
+  {
+    id: 4,
+    tipo: 'rechazado',
+    titulo: 'Fotografía no válida',
+    mensaje: 'La obra "Tejido de palma" no pudo ser aprobada porque la fotografía está muy borrosa. Por favor, súbela de nuevo.',
+    tiempo: 'Hace 1 semana',
+    leida: true
   }
 ]

@@ -1,12 +1,14 @@
 import { useMemo, useState } from 'react'
 import { useReveal } from '../hooks/useReveal'
 import { categorias, obrasIniciales } from '../data/mockData'
+import { useAuth } from '../context/AuthContext'
 import ObraCard from './ObraCard'
 
-function Gallery() {
+function Gallery({ onOpenUpload }) {
   const [obras] = useState(obrasIniciales)
   const [filtro, setFiltro] = useState('Todas')
-  const { ref, isVisible } = useReveal(0.1)
+  const { ref, isVisible } = useReveal(0.2)
+  const { user } = useAuth()
 
   const obrasFiltradas = useMemo(() => {
     if (filtro === 'Todas') return obras
@@ -53,8 +55,22 @@ function Gallery() {
           ))}
         </div>
 
+        {user && (
+          <div className="mt-8 flex justify-center">
+            <button
+              onClick={onOpenUpload}
+              className="group inline-flex items-center gap-2 rounded-full bg-tertiary px-6 py-2.5 font-sans text-xs font-semibold uppercase tracking-widest text-linen shadow-md transition-all hover:scale-105 hover:bg-tertiary/80"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              Subir nueva obra
+            </button>
+          </div>
+        )}
+
         {/* Galería tipo masonry */}
-        <div className="mt-16 columns-1 md:columns-3 gap-8">
+        <div className="mt-16 columns-1 gap-8 sm:columns-2 lg:columns-3">
           {obrasFiltradas.map((obra) => (
             <div key={obra.id} className="mb-8 break-inside-avoid">
               <ObraCard obra={obra} />

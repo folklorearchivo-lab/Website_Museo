@@ -3,7 +3,7 @@ import { eventosProgramados, obrasIniciales } from '../data/mockData'
 import ObraCard from './ObraCard'
 
 function Eventos() {
-  const { ref, isVisible } = useReveal(0.1)
+  const { ref, isVisible } = useReveal(0)
   const eventoActual = eventosProgramados.find((e) => e.activa)
 
   const formatFecha = (fechaString) => {
@@ -15,7 +15,7 @@ function Eventos() {
     <section
       id="eventos"
       ref={ref}
-      className="relative scroll-mt-20 overflow-hidden bg-linen py-24 lg:py-32"
+      className="relative scroll-mt-20 overflow-hidden bg-linen py-16 lg:py-20"
     >
       {/* Fundido desde la sección anterior (Galería) */}
       <div className="pointer-events-none absolute top-0 w-full h-[32rem] bg-gradient-to-b from-gallery-cream via-gallery-cream/60 to-gallery-cream/0" />

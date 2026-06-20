@@ -1,4 +1,5 @@
 import cesteriaImg from '../assets/Cesteria.jpeg'
+import { useAuth } from '../context/AuthContext'
 
 const stats = [
   { value: '+120', label: 'Obras digitalizadas' },
@@ -7,6 +8,7 @@ const stats = [
 ]
 
 function Hero({ onOpenRegister }) {
+  const { user } = useAuth()
   return (
     <header id="inicio" className="relative flex min-h-screen items-center overflow-hidden">
       {/* Fotografía real: cestería artesanal del Táchira */}
@@ -47,15 +49,17 @@ function Hero({ onOpenRegister }) {
               <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
             </svg>
           </a>
-          <button
-            onClick={onOpenRegister}
-            className="group inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-7 py-3 font-sans text-sm font-semibold uppercase tracking-wider text-linen backdrop-blur-md transition-all hover:scale-105 hover:border-linen hover:bg-white/20 hover:shadow-xl"
-          >
-            Registrarme como cultor
-            <svg className="h-4 w-4 transition-transform group-hover:-translate-y-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
-          </button>
+          {!user && (
+            <button
+              onClick={onOpenRegister}
+              className="group inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-7 py-3 font-sans text-sm font-semibold uppercase tracking-wider text-linen backdrop-blur-md transition-all hover:scale-105 hover:border-linen hover:bg-white/20 hover:shadow-xl"
+            >
+              Registrarme como cultor
+              <svg className="h-4 w-4 transition-transform group-hover:-translate-y-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </button>
+          )}
         </div>
 
         <dl className="mx-auto mt-16 flex max-w-xl flex-wrap justify-center gap-x-8 gap-y-6 rounded-3xl border border-white/25 bg-dark-umber/70 px-6 py-6 shadow-xl shadow-cafe-noir/50 backdrop-blur-md transition-all duration-500 hover:border-white/40 hover:bg-dark-umber/80 sm:gap-x-14 sm:px-8 sm:py-7">
