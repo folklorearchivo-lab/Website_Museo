@@ -7,26 +7,7 @@ import Textarea from './form/Textarea'
 import Dropzone from './form/Dropzone'
 import Checkbox from './form/Checkbox'
 import Radio from './form/Radio'
-import { postularCultorRequest, subirCedulaCultorRequest, getParroquiasRequest } from '../services/api'
-
-const municipios = [
-  'San Cristóbal',
-  'Capacho (Libertador)',
-  'Independencia',
-  'Lobatera',
-  'Pregonero',
-  'Queniquea',
-  'Rubio',
-]
-
-const oficios = [
-  'Alfarería y cerámica',
-  'Cestería',
-  'Talla en madera',
-  'Textiles y tejidos',
-  'Pintura popular',
-  'Marroquinería',
-]
+import { postularCultorRequest, subirCedulaCultorRequest, getParroquiasByMunicipioRequest, getMunicipiosRequest, getOficiosRequest } from '../services/api'
 
 const generos = ['Femenino', 'Masculino', 'Otro']
 
@@ -116,14 +97,23 @@ function RegisterForm({ isOpen, onClose }) {
   // de validar este requisito del lado del servidor por ahora.
   const [archivoCedula, setArchivoCedula] = useState([])
 
-  // Parroquias para el <select> de id_parroquia (ruta pública, sin auth)
+  // Municipios de la BD (ruta pública)
+  const [municipiosList, setMunicipiosList] = useState([])
+  // Parroquias filtradas por municipio (ruta pública)
   const [parroquias, setParroquias] = useState([])
+
+  // Oficios de la BD (ruta pública)
+  const [oficiosList, setOficiosList] = useState([])
 
   useEffect(() => {
     if (!isOpen) return
-    getParroquiasRequest()
-      .then(setParroquias)
-      .catch(() => setParroquias([]))
+    getMunicipiosRequest()
+      .then(setMunicipiosList)
+      .catch(() => setMunicipiosList([]))
+    
+    getOficiosRequest()
+      .then(setOficiosList)
+      .catch(() => setOficiosList([]))
   }, [isOpen])
 
   if (!isOpen) return null;
@@ -134,6 +124,18 @@ function RegisterForm({ isOpen, onClose }) {
       setForm((prev) => ({ ...prev, [name]: value }))
     } else {
       setCamposVisuales((prev) => ({ ...prev, [name]: value }))
+    }
+
+    if (name === 'municipio') {
+      // Resetear parroquia si cambia el municipio
+      setForm((prev) => ({ ...prev, id_parroquia: '' }))
+      if (value) {
+        getParroquiasByMunicipioRequest(value)
+          .then(setParroquias)
+          .catch(() => setParroquias([]))
+      } else {
+        setParroquias([])
+      }
     }
   }
 
@@ -287,7 +289,7 @@ function RegisterForm({ isOpen, onClose }) {
                 <span className="font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir">
                   Cédula de identidad <span> *</span>
                 </span>
-                <div className="flex items-center border border-amber-700/40 rounded-lg overflow-hidden bg-white/50 focus-within:ring-1 focus-within:ring-amber-700">
+                <div className="flex items-center w-full bg-white/50 border border-cafe-noir/30 rounded-xl overflow-hidden focus-within:border-cafe-noir focus-within:ring-1 focus-within:ring-cafe-noir transition-colors">
                   <select
                     value={cedulaPrefijo}
                     onChange={(e) => setCedulaPrefijo(e.target.value)}
@@ -335,7 +337,10 @@ function RegisterForm({ isOpen, onClose }) {
                 required
                 value={camposVisuales.municipio}
                 onChange={handleChange}
-                options={municipios}
+                options={municipiosList.map((mun) => ({
+                  value: mun.id_municipio,
+                  label: mun.nombre,
+                }))}
               />
               <SelectInput
                 label="Parroquia de residencia"
@@ -346,6 +351,7 @@ function RegisterForm({ isOpen, onClose }) {
                   value: parroquia.id_parroquia,
                   label: parroquia.nombre,
                 }))}
+                disabled={!camposVisuales.municipio || parroquias.length === 0}
               />
               <TextInput
                 label="Dirección de residencia"
@@ -358,7 +364,7 @@ function RegisterForm({ isOpen, onClose }) {
                 <span className="font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir">
                   Teléfono de contacto
                 </span>
-                <div className="flex items-center border border-amber-700/40 rounded-lg overflow-hidden bg-white/50 focus-within:ring-1 focus-within:ring-amber-700">
+                <div className="flex items-center w-full bg-white/50 border border-cafe-noir/30 rounded-xl overflow-hidden focus-within:border-cafe-noir focus-within:ring-1 focus-within:ring-cafe-noir transition-colors">
                   <select
                     value={telefonoPrefijo}
                     onChange={(e) => setTelefonoPrefijo(e.target.value)}
@@ -422,7 +428,10 @@ function RegisterForm({ isOpen, onClose }) {
                 required
                 value={camposVisuales.oficio}
                 onChange={handleChange}
-                options={oficios}
+                options={oficiosList.map((o) => ({
+                  value: o.nombre,
+                  label: o.nombre,
+                }))}
               />
               <TextInput
                 label="Especialidad"
