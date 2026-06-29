@@ -81,7 +81,16 @@ function Navbar({ onOpenRegister, onOpenLogin, onOpenPanel }) {
     cerrarMenu()
     document.getElementById('directorio')?.scrollIntoView({ behavior: 'smooth' })
   }
-  const toggleNotificaciones = () => setNotificacionesAbiertas(!notificacionesAbiertas)
+  const toggleNotificaciones = () => {
+    const nuevoEstado = !notificacionesAbiertas
+    setNotificacionesAbiertas(nuevoEstado)
+    // Re-carga las notificaciones cada vez que se abre el panel para mostrar las más recientes
+    if (nuevoEstado && user) {
+      getNotificacionesRequest(user.token)
+        .then(setNotificaciones)
+        .catch(() => {})
+    }
+  }
   const toggleCuenta = () => setCuentaAbierta(!cuentaAbierta)
 
   // Cerrar notificaciones y menú de cuenta al hacer clic fuera

@@ -41,8 +41,7 @@ function UploadObraForm({ isOpen, onClose, onObraEnviada }) {
       const nuevaObra = await postularObraRequest({
         titulo,
         tipo_patrimonio: tipoPatrimonio,
-        anio_creacion: anio,
-        descripcion,
+        descripcion_historica: descripcion,
         tecnica_utilizada: tecnica,
       }, user.token)
 
