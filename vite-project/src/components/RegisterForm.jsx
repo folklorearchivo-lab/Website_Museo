@@ -11,7 +11,7 @@ import { postularCultorRequest, subirCedulaCultorRequest, getParroquiasByMunicip
 
 const generos = ['Femenino', 'Masculino', 'Otro']
 
-const funcionalidades = ['Utilitaria', 'Decorativa', 'Ceremonial', 'Mixta']
+const funcionalidades = ['Utilitaria', 'Decorativa', 'Ceremonial']
 
 const recaudosRequeridos = [
   'Copia de la cédula de identidad',
@@ -33,6 +33,7 @@ const initialFormState = {
   segundo_nombre: '',
   primer_apellido: '',
   segundo_apellido: '',
+  seudonimo: '',
   fecha_nacimiento: '',
   genero: '',
   correo_contacto: '',
@@ -50,10 +51,8 @@ const initialFormState = {
 const initialCamposVisualesState = {
   lugarNacimiento: '',
   municipio: '',
-  oficio: '',
   especialidad: '',
   producto: '',
-  clasificacion: '',
   materiaPrima: '',
   fuenteMateriaPrima: '',
   comercializa: '',
@@ -74,6 +73,8 @@ function RegisterForm({ isOpen, onClose }) {
   const [form, setForm] = useState(initialFormState)
   const [camposVisuales, setCamposVisuales] = useState(initialCamposVisualesState)
   const [estaCertificado, setEstaCertificado] = useState(false)
+  const [oficiosSeleccionados, setOficiosSeleccionados] = useState([])
+  const [clasificacionSeleccionada, setClasificacionSeleccionada] = useState([])
   const [funcionalidadMarcada, setFuncionalidadMarcada] = useState([])
   const [recaudosMarcados, setRecaudosMarcados] = useState([])
   const [archivos, setArchivos] = useState([])
@@ -202,6 +203,8 @@ function RegisterForm({ isOpen, onClose }) {
       setTelefonoNumero('')
       setArchivoCedula([])
       setEstaCertificado(false)
+      setOficiosSeleccionados([])
+      setClasificacionSeleccionada([])
       setFuncionalidadMarcada([])
       setRecaudosMarcados([])
       setArchivos([])
@@ -284,6 +287,13 @@ function RegisterForm({ isOpen, onClose }) {
                 value={form.segundo_apellido}
                 onChange={handleChange}
                 placeholder="Ej. Pérez"
+              />
+              <TextInput
+                label="Seudónimo"
+                name="seudonimo"
+                value={form.seudonimo}
+                onChange={handleChange}
+                placeholder="Ej. El Artesano de Capacho"
               />
               <div className="flex flex-col gap-2">
                 <span className="font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir">
@@ -413,7 +423,7 @@ function RegisterForm({ isOpen, onClose }) {
               <Checkbox
                 checked={estaCertificado}
                 onChange={() => setEstaCertificado((prev) => !prev)}
-                label="Cuento con certificación de Fe de Vida vigente"
+                label="Cuento con certificación vigente"
               />
             </div>
           </div>
@@ -422,17 +432,23 @@ function RegisterForm({ isOpen, onClose }) {
           <div className="space-y-0">
             <SectionTitle>II. Características de Oficio y Producto</SectionTitle>
             <div className="mt-2 grid grid-cols-1 gap-x-8 gap-y-7 md:grid-cols-2">
-              <SelectInput
-                label="Oficio"
-                name="oficio"
-                required
-                value={camposVisuales.oficio}
-                onChange={handleChange}
-                options={oficiosList.map((o) => ({
-                  value: o.nombre,
-                  label: o.nombre,
-                }))}
-              />
+              <div className="flex flex-col gap-2">
+                <span className="font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir">
+                  Oficio(s) <span> *</span>
+                </span>
+                <div className="flex flex-wrap gap-4">
+                  {oficiosList.map((o) => (
+                    <Checkbox
+                      key={o.id_oficio || o.nombre}
+                      checked={oficiosSeleccionados.includes(o.nombre)}
+                      onChange={() =>
+                        toggleEnLista(oficiosSeleccionados, setOficiosSeleccionados, o.nombre)
+                      }
+                      label={o.nombre}
+                    />
+                  ))}
+                </div>
+              </div>
               <TextInput
                 label="Especialidad"
                 name="especialidad"
@@ -469,12 +485,12 @@ function RegisterForm({ isOpen, onClose }) {
               </span>
               <div className="mt-3 flex flex-wrap gap-6">
                 {['Indígena', 'Tradicional', 'Contemporánea'].map((opcion) => (
-                  <Radio
+                  <Checkbox
                     key={opcion}
-                    name="clasificacion"
-                    value={opcion}
-                    checked={camposVisuales.clasificacion === opcion}
-                    onChange={handleChange}
+                    checked={clasificacionSeleccionada.includes(opcion)}
+                    onChange={() =>
+                      toggleEnLista(clasificacionSeleccionada, setClasificacionSeleccionada, opcion)
+                    }
                     label={opcion}
                   />
                 ))}
@@ -522,6 +538,7 @@ function RegisterForm({ isOpen, onClose }) {
                   value={camposVisuales.lugaresVenta}
                   onChange={handleChange}
                   placeholder="Ej. Mercado artesanal, ferias, encargos"
+                  disabled={camposVisuales.comercializa === 'No comercializa'}
                 />
               </div>
             </div>
@@ -545,7 +562,16 @@ function RegisterForm({ isOpen, onClose }) {
                 Requisito indispensable para validar tu identidad.
               </p>
               <div className="mt-3">
-                <Dropzone files={archivoCedula} onFilesChange={setArchivoCedula} />
+                <Dropzone files={archivoCedula} onFilesChange={setArchivoCedula} accept="image/jpeg,image/png,image/webp" maxSizeMB={5} minWidth={600} minHeight={400} />
+              </div>
+            </div>
+
+            <div className="mt-8">
+              <span className="font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir">
+                Otros documentos de soporte (opcional)
+              </span>
+              <div className="mt-3">
+                <Dropzone files={archivos} onFilesChange={setArchivos} />
               </div>
             </div>
 
@@ -564,15 +590,6 @@ function RegisterForm({ isOpen, onClose }) {
                     label={recaudo}
                   />
                 ))}
-              </div>
-            </div>
-
-            <div className="mt-8">
-              <span className="font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir">
-                Otros documentos de soporte (opcional)
-              </span>
-              <div className="mt-3">
-                <Dropzone files={archivos} onFilesChange={setArchivos} />
               </div>
             </div>
           </div>

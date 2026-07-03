@@ -1,11 +1,70 @@
 import { useRef, useState } from 'react'
 
-function Dropzone({ files, onFilesChange }) {
+function aceptarTexto(accept) {
+  const mimeMap = {
+    'image/jpeg': 'JPG',
+    'image/png': 'PNG',
+    'image/webp': 'WEBP',
+    'application/pdf': 'PDF',
+  }
+  return accept.split(',').map(t => mimeMap[t.trim()] || t.trim()).join(', ')
+}
+
+function Dropzone({ files, onFilesChange, maxSizeMB = 5, accept = 'image/jpeg,image/png,image/webp,application/pdf', minWidth, minHeight }) {
   const [isDragging, setIsDragging] = useState(false)
+  const [fileError, setFileError] = useState('')
   const inputRef = useRef(null)
 
-  const addFiles = (fileList) => {
-    onFilesChange([...files, ...Array.from(fileList)])
+  const addFiles = async (fileList) => {
+    setFileError('')
+    const maxBytes = maxSizeMB * 1024 * 1024
+    const validFiles = []
+
+    for (const file of Array.from(fileList)) {
+      if (file.size > maxBytes) {
+        setFileError(`El archivo "${file.name}" supera el límite de ${maxSizeMB}MB.`)
+        continue
+      }
+
+      if ((minWidth || minHeight) && file.type.startsWith('image/')) {
+        try {
+          const dimensions = await getImageDimensions(file)
+          if (minWidth && dimensions.width < minWidth) {
+            setFileError(`La imagen "${file.name}" tiene ${dimensions.width}px de ancho. Mínimo: ${minWidth}px.`)
+            continue
+          }
+          if (minHeight && dimensions.height < minHeight) {
+            setFileError(`La imagen "${file.name}" tiene ${dimensions.height}px de alto. Mínimo: ${minHeight}px.`)
+            continue
+          }
+        } catch {
+          setFileError(`No se pudo leer la imagen "${file.name}".`)
+          continue
+        }
+      }
+
+      validFiles.push(file)
+    }
+
+    if (validFiles.length > 0) {
+      onFilesChange([...files, ...validFiles])
+    }
+  }
+
+  function getImageDimensions(file) {
+    return new Promise((resolve, reject) => {
+      const img = new Image()
+      const url = URL.createObjectURL(file)
+      img.onload = () => {
+        URL.revokeObjectURL(url)
+        resolve({ width: img.naturalWidth, height: img.naturalHeight })
+      }
+      img.onerror = () => {
+        URL.revokeObjectURL(url)
+        reject(new Error('No se pudo cargar la imagen'))
+      }
+      img.src = url
+    })
   }
 
   const handleDrop = (event) => {
@@ -51,16 +110,21 @@ function Dropzone({ files, onFilesChange }) {
           Arrastra archivos aquí o haz clic para seleccionarlos
         </p>
         <p className="font-sans text-xs text-secondary">
-          PDF, JPG o PNG · máx. 10MB por archivo
+          {aceptarTexto(accept)} · máx. {maxSizeMB}MB por archivo{minWidth ? ` · mín. ${minWidth}×${minHeight}px` : ''}
         </p>
         <input
           ref={inputRef}
           type="file"
           multiple
+          accept={accept}
           className="hidden"
           onChange={(event) => addFiles(event.target.files)}
         />
       </div>
+
+      {fileError && (
+        <p className="mt-2 font-sans text-xs text-red-600">{fileError}</p>
+      )}
 
       {files.length > 0 && (
         <ul className="mt-3 space-y-2">

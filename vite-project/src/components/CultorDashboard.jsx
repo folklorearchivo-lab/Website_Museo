@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
-import { getMiPerfilRequest, getMisObrasRequest } from '../services/api'
+import { getMiPerfilRequest, getMisObrasRequest, updateMiPerfilRequest, appendCurriculumRequest } from '../services/api'
 
 const estadoEstilos = {
   aprobado: 'bg-emerald-100 text-emerald-600 border-emerald-200/50',
@@ -25,6 +25,19 @@ function CultorDashboard({ isOpen, onClose, onOpenUpload, initialTab }) {
   const toggleMostrarPassword = (campo) =>
     setMostrarPassword((prev) => ({ ...prev, [campo]: !prev[campo] }))
   const [wasOpen, setWasOpen] = useState(isOpen)
+
+  // Edición de perfil
+  const [editandoPerfil, setEditandoPerfil] = useState(false)
+  const [editForm, setEditForm] = useState({})
+  const [editSaving, setEditSaving] = useState(false)
+  const [editError, setEditError] = useState('')
+  const [editSuccess, setEditSuccess] = useState('')
+
+  // Curriculum append
+  const [nuevoTextoCurriculum, setNuevoTextoCurriculum] = useState('')
+  const [curriculumSaving, setCurriculumSaving] = useState(false)
+  const [curriculumError, setCurriculumError] = useState('')
+  const [curriculumSuccess, setCurriculumSuccess] = useState('')
 
   // Perfil real del cultor (cédula, parroquia, dirección, etc.), traído del backend
   // vía el token de sesión — ya no se usa la maqueta cultoresIniciales.
@@ -239,9 +252,33 @@ function CultorDashboard({ isOpen, onClose, onOpenUpload, initialTab }) {
 
                   {/* Datos personales: reales desde el backend (GET /api/cultores/perfil) */}
                   <div className="space-y-4">
-                    <span className="font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir">
-                      Datos Personales
-                    </span>
+                    <div className="flex items-center justify-between">
+                      <span className="font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir">
+                        Datos Personales
+                      </span>
+                      {perfil && !editandoPerfil && (
+                        <button
+                          onClick={() => {
+                            setEditForm({
+                              primer_nombre: perfil.primer_nombre || '',
+                              segundo_nombre: perfil.segundo_nombre || '',
+                              primer_apellido: perfil.primer_apellido || '',
+                              segundo_apellido: perfil.segundo_apellido || '',
+                              seudonimo: perfil.seudonimo || '',
+                              telefono_contacto: perfil.telefono_contacto || '',
+                              correo_contacto: perfil.correo_contacto || '',
+                              direccion_residencia: perfil.direccion_residencia || '',
+                            })
+                            setEditandoPerfil(true)
+                            setEditError('')
+                            setEditSuccess('')
+                          }}
+                          className="rounded-full border border-cafe-noir/20 px-4 py-1.5 font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir transition-opacity hover:opacity-70"
+                        >
+                          Editar Perfil
+                        </button>
+                      )}
+                    </div>
 
                     {perfilLoading ? (
                       <div className="rounded-2xl border border-cafe-noir/10 bg-white/50 p-6 text-center">
@@ -251,6 +288,96 @@ function CultorDashboard({ isOpen, onClose, onOpenUpload, initialTab }) {
                       <div className="rounded-2xl border border-red-200/50 bg-red-50/60 p-6 text-center">
                         <p className="font-sans text-sm text-red-700">{perfilError}</p>
                       </div>
+                    ) : editandoPerfil ? (
+                      <form
+                        onSubmit={async (e) => {
+                          e.preventDefault()
+                          setEditSaving(true)
+                          setEditError('')
+                          setEditSuccess('')
+                          try {
+                            const payload = {}
+                            for (const key of Object.keys(editForm)) {
+                              if (editForm[key] !== (perfil[key] || '')) {
+                                payload[key] = editForm[key] || null
+                              }
+                            }
+                            if (Object.keys(payload).length > 0) {
+                              await updateMiPerfilRequest(payload, user.token)
+                              const perfilActualizado = await getMiPerfilRequest(user.token)
+                              setPerfil(perfilActualizado)
+                            }
+                            setEditSuccess('Perfil actualizado correctamente.')
+                            setEditandoPerfil(false)
+                          } catch (err) {
+                            setEditError(err.message)
+                          } finally {
+                            setEditSaving(false)
+                          }
+                        }}
+                        className="rounded-2xl border border-cafe-noir/10 bg-white/50 p-6 space-y-4"
+                      >
+                        {editSuccess && (
+                          <div className="rounded-xl border border-emerald-200/50 bg-emerald-50/60 px-4 py-3 font-sans text-sm text-emerald-700">
+                            {editSuccess}
+                          </div>
+                        )}
+                        {editError && (
+                          <div className="rounded-xl border border-red-200/50 bg-red-50/60 px-4 py-3 font-sans text-sm text-red-700">
+                            {editError}
+                          </div>
+                        )}
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                          <div>
+                            <label className="block font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir mb-1">Primer nombre</label>
+                            <input name="primer_nombre" value={editForm.primer_nombre || ''} onChange={(e) => setEditForm((prev) => ({ ...prev, primer_nombre: e.target.value }))} className="w-full rounded-xl border border-cafe-noir/20 bg-white/70 px-3 py-2 font-sans text-sm focus:border-tertiary focus:outline-none focus:ring-1 focus:ring-tertiary" />
+                          </div>
+                          <div>
+                            <label className="block font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir mb-1">Segundo nombre</label>
+                            <input name="segundo_nombre" value={editForm.segundo_nombre || ''} onChange={(e) => setEditForm((prev) => ({ ...prev, segundo_nombre: e.target.value }))} className="w-full rounded-xl border border-cafe-noir/20 bg-white/70 px-3 py-2 font-sans text-sm focus:border-tertiary focus:outline-none focus:ring-1 focus:ring-tertiary" />
+                          </div>
+                          <div>
+                            <label className="block font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir mb-1">Primer apellido</label>
+                            <input name="primer_apellido" value={editForm.primer_apellido || ''} onChange={(e) => setEditForm((prev) => ({ ...prev, primer_apellido: e.target.value }))} className="w-full rounded-xl border border-cafe-noir/20 bg-white/70 px-3 py-2 font-sans text-sm focus:border-tertiary focus:outline-none focus:ring-1 focus:ring-tertiary" />
+                          </div>
+                          <div>
+                            <label className="block font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir mb-1">Segundo apellido</label>
+                            <input name="segundo_apellido" value={editForm.segundo_apellido || ''} onChange={(e) => setEditForm((prev) => ({ ...prev, segundo_apellido: e.target.value }))} className="w-full rounded-xl border border-cafe-noir/20 bg-white/70 px-3 py-2 font-sans text-sm focus:border-tertiary focus:outline-none focus:ring-1 focus:ring-tertiary" />
+                          </div>
+                          <div>
+                            <label className="block font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir mb-1">Seudónimo</label>
+                            <input name="seudonimo" value={editForm.seudonimo || ''} onChange={(e) => setEditForm((prev) => ({ ...prev, seudonimo: e.target.value }))} className="w-full rounded-xl border border-cafe-noir/20 bg-white/70 px-3 py-2 font-sans text-sm focus:border-tertiary focus:outline-none focus:ring-1 focus:ring-tertiary" />
+                          </div>
+                          <div>
+                            <label className="block font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir mb-1">Teléfono</label>
+                            <input name="telefono_contacto" value={editForm.telefono_contacto || ''} onChange={(e) => setEditForm((prev) => ({ ...prev, telefono_contacto: e.target.value }))} className="w-full rounded-xl border border-cafe-noir/20 bg-white/70 px-3 py-2 font-sans text-sm focus:border-tertiary focus:outline-none focus:ring-1 focus:ring-tertiary" />
+                          </div>
+                          <div>
+                            <label className="block font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir mb-1">Correo</label>
+                            <input name="correo_contacto" type="email" value={editForm.correo_contacto || ''} onChange={(e) => setEditForm((prev) => ({ ...prev, correo_contacto: e.target.value }))} className="w-full rounded-xl border border-cafe-noir/20 bg-white/70 px-3 py-2 font-sans text-sm focus:border-tertiary focus:outline-none focus:ring-1 focus:ring-tertiary" />
+                          </div>
+                          <div className="sm:col-span-2">
+                            <label className="block font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir mb-1">Dirección</label>
+                            <textarea name="direccion_residencia" value={editForm.direccion_residencia || ''} onChange={(e) => setEditForm((prev) => ({ ...prev, direccion_residencia: e.target.value }))} rows={2} className="w-full rounded-xl border border-cafe-noir/20 bg-white/70 px-3 py-2 font-sans text-sm focus:border-tertiary focus:outline-none focus:ring-1 focus:ring-tertiary resize-none" />
+                          </div>
+                        </div>
+                        <div className="flex justify-end gap-3 pt-2">
+                          <button
+                            type="button"
+                            onClick={() => setEditandoPerfil(false)}
+                            className="rounded-full border border-cafe-noir/20 px-5 py-2 font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir transition-opacity hover:opacity-70"
+                          >
+                            Cancelar
+                          </button>
+                          <button
+                            type="submit"
+                            disabled={editSaving}
+                            className="rounded-full bg-tertiary px-5 py-2 font-sans text-xs font-semibold uppercase tracking-wide text-linen shadow-md transition-opacity hover:opacity-80 disabled:opacity-50"
+                          >
+                            {editSaving ? 'Guardando...' : 'Guardar'}
+                          </button>
+                        </div>
+                      </form>
                     ) : (
                       <div className="grid grid-cols-1 gap-4 rounded-2xl border border-cafe-noir/10 bg-white/50 p-6 sm:grid-cols-2">
                         <div>
@@ -277,6 +404,12 @@ function CultorDashboard({ isOpen, onClose, onOpenUpload, initialTab }) {
                           <p className="font-sans text-[11px] uppercase tracking-wide text-cafe-noir/50">Correo de contacto</p>
                           <p className="mt-1 font-sans text-sm text-cafe-noir">{perfil?.correo_contacto || user.correo || '—'}</p>
                         </div>
+                        {perfil?.seudonimo && (
+                          <div>
+                            <p className="font-sans text-[11px] uppercase tracking-wide text-cafe-noir/50">Seudónimo</p>
+                            <p className="mt-1 font-sans text-sm text-cafe-noir">{perfil.seudonimo}</p>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -368,6 +501,76 @@ function CultorDashboard({ isOpen, onClose, onOpenUpload, initialTab }) {
                           className="rounded-full bg-tertiary px-6 py-2.5 font-sans text-xs font-semibold uppercase tracking-wide text-linen shadow-md transition-opacity hover:opacity-80"
                         >
                           Actualizar Contraseña
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+
+                  {/* Currículum: agregar texto al resumen curricular */}
+                  <div className="space-y-4">
+                    <span className="font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir">
+                      Currículum
+                    </span>
+
+                    {curriculumSuccess && (
+                      <div className="rounded-xl border border-emerald-200/50 bg-emerald-50/60 px-4 py-3 font-sans text-sm text-emerald-700">
+                        {curriculumSuccess}
+                      </div>
+                    )}
+                    {curriculumError && (
+                      <div className="rounded-xl border border-red-200/50 bg-red-50/60 px-4 py-3 font-sans text-sm text-red-700">
+                        {curriculumError}
+                      </div>
+                    )}
+
+                    <form
+                      onSubmit={async (e) => {
+                        e.preventDefault()
+                        if (!nuevoTextoCurriculum.trim()) return
+                        setCurriculumSaving(true)
+                        setCurriculumError('')
+                        setCurriculumSuccess('')
+                        try {
+                          await appendCurriculumRequest(nuevoTextoCurriculum, user.token)
+                          const perfilActualizado = await getMiPerfilRequest(user.token)
+                          setPerfil(perfilActualizado)
+                          setNuevoTextoCurriculum('')
+                          setCurriculumSuccess('Texto agregado al currículum correctamente.')
+                        } catch (err) {
+                          setCurriculumError(err.message)
+                        } finally {
+                          setCurriculumSaving(false)
+                        }
+                      }}
+                      className="rounded-2xl border border-cafe-noir/10 bg-white/50 p-6 space-y-4"
+                    >
+                      {perfil?.resumen_curricular && (
+                        <div>
+                          <p className="font-sans text-[11px] uppercase tracking-wide text-cafe-noir/50 mb-1">Resumen actual</p>
+                          <p className="font-sans text-sm text-cafe-noir whitespace-pre-line bg-white/70 rounded-xl p-3 border border-cafe-noir/10 max-h-40 overflow-y-auto">
+                            {perfil.resumen_curricular}
+                          </p>
+                        </div>
+                      )}
+                      <div>
+                        <label className="block font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir mb-2">
+                          Agregar al currículum
+                        </label>
+                        <textarea
+                          value={nuevoTextoCurriculum}
+                          onChange={(e) => setNuevoTextoCurriculum(e.target.value)}
+                          rows={4}
+                          placeholder="Describe nuevos logros, exposiciones, reconocimientos..."
+                          className="w-full rounded-xl border border-cafe-noir/20 bg-white/70 px-4 py-3 font-sans text-sm shadow-sm focus:border-tertiary focus:outline-none focus:ring-1 focus:ring-tertiary resize-none"
+                        />
+                      </div>
+                      <div className="flex justify-end pt-2">
+                        <button
+                          type="submit"
+                          disabled={curriculumSaving || !nuevoTextoCurriculum.trim()}
+                          className="rounded-full bg-tertiary px-6 py-2.5 font-sans text-xs font-semibold uppercase tracking-wide text-linen shadow-md transition-opacity hover:opacity-80 disabled:opacity-50"
+                        >
+                          {curriculumSaving ? 'Agregando...' : 'Agregar al Currículum'}
                         </button>
                       </div>
                     </form>

@@ -12,7 +12,7 @@ function DateInput({ label, name, required = false, value, onChange }) {
           required={required}
           value={value}
           onChange={onChange}
-          className="w-full appearance-none rounded-xl border border-cafe-noir/30 bg-white/50 px-4 py-2.5 pr-10 font-sans text-cafe-noir focus:border-cafe-noir focus:outline-none focus:ring-1 focus:ring-cafe-noir transition-colors [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:w-10 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+          className="date-input-full-click"
         />
         <svg
           className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-cafe-noir"
@@ -28,6 +28,34 @@ function DateInput({ label, name, required = false, value, onChange }) {
           />
         </svg>
       </div>
+      <style>{`
+        .date-input-full-click {
+          width: 100%;
+          appearance: none;
+          border-radius: 0.75rem;
+          border: 1px solid rgba(139, 90, 43, 0.3);
+          background-color: rgba(255, 255, 255, 0.5);
+          padding: 0.625rem 2.5rem 0.625rem 1rem;
+          font-family: ui-sans-serif, system-ui, sans-serif;
+          font-size: 0.875rem;
+          color: #5C3A1E;
+          transition: all 0.2s;
+        }
+        .date-input-full-click:focus {
+          border-color: #5C3A1E;
+          outline: none;
+          box-shadow: 0 0 0 1px #5C3A1E;
+        }
+        .date-input-full-click::-webkit-calendar-picker-indicator {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+          height: 100%;
+          opacity: 0;
+          cursor: pointer;
+        }
+      `}</style>
     </label>
   )
 }

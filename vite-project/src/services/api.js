@@ -210,3 +210,29 @@ export async function getMisObrasRequest(token) {
     throw new Error(errorMsg, { cause: error })
   }
 }
+
+// Actualizar el perfil del cultor logueado (PATCH /cultores/mi-perfil)
+export async function updateMiPerfilRequest(data, token) {
+  try {
+    const response = await axios.patch(`${API_URL}/cultores/mi-perfil`, data, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    return response.data
+  } catch (error) {
+    const errorMsg = error.response?.data?.error || error.response?.data?.message || 'Error al actualizar el perfil'
+    throw new Error(errorMsg, { cause: error })
+  }
+}
+
+// Agregar texto al resumen curricular del cultor (PATCH /cultores/mi-perfil/curriculum)
+export async function appendCurriculumRequest(texto, token) {
+  try {
+    const response = await axios.patch(`${API_URL}/cultores/mi-perfil/curriculum`, { texto }, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    return response.data
+  } catch (error) {
+    const errorMsg = error.response?.data?.error || error.response?.data?.message || 'Error al agregar al currículum'
+    throw new Error(errorMsg, { cause: error })
+  }
+}
