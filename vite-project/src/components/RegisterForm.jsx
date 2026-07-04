@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 
 import TextInput from './form/TextInput'
 import SelectInput from './form/SelectInput'
@@ -7,7 +7,7 @@ import Textarea from './form/Textarea'
 import Dropzone from './form/Dropzone'
 import Checkbox from './form/Checkbox'
 import Radio from './form/Radio'
-import { postularCultorRequest, subirCedulaCultorRequest, getParroquiasByMunicipioRequest, getMunicipiosRequest, getOficiosRequest } from '../services/api'
+import { postularCultorRequest, subirCedulaCultorRequest, validarCedulaRequest, getParroquiasByMunicipioRequest, getMunicipiosRequest, getOficiosRequest } from '../services/api'
 
 const generos = ['Femenino', 'Masculino', 'Otro']
 
@@ -82,6 +82,8 @@ function RegisterForm({ isOpen, onClose }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
   const [documentoUploadError, setDocumentoUploadError] = useState('')
+  const [ocrErrores, setOcrErrores] = useState({})
+  const [datosOcr, setDatosOcr] = useState(null)
 
   // Cédula: prefijo V-/E- + dígitos, compuestos en un solo string ("V-12345678")
   // justo antes de enviar, en el formato exacto que valida el backend.
@@ -96,7 +98,12 @@ function RegisterForm({ isOpen, onClose }) {
   // está vacío). Nota: esta exigencia hoy solo se aplica en el frontend — el backend
   // todavía no tiene Multer/almacenamiento de archivos conectado, así que no hay forma
   // de validar este requisito del lado del servidor por ahora.
-  const [archivoCedula, setArchivoCedula] = useState([])
+  const [archivoCedula, _setArchivoCedula] = useState([])
+  const setArchivoCedula = useCallback((val) => {
+    _setArchivoCedula(val)
+    setOcrErrores({})
+    setDatosOcr(null)
+  }, [])
 
   // Municipios de la BD (ruta pública)
   const [municipiosList, setMunicipiosList] = useState([])
@@ -127,6 +134,25 @@ function RegisterForm({ isOpen, onClose }) {
       setCamposVisuales((prev) => ({ ...prev, [name]: value }))
     }
 
+    if (ocrErrores[name]) {
+      setOcrErrores((prev) => {
+        const next = { ...prev }
+        delete next[name]
+        if (name === 'primer_nombre' || name === 'segundo_nombre') {
+          delete next.primer_nombre
+          delete next.segundo_nombre
+        }
+        if (name === 'primer_apellido' || name === 'segundo_apellido') {
+          delete next.primer_apellido
+          delete next.segundo_apellido
+        }
+        if (name === 'cedulaPrefijo' || name === 'cedulaNumero' || name === 'cedula') {
+          delete next.cedula
+        }
+        return next
+      })
+    }
+
     if (name === 'municipio') {
       // Resetear parroquia si cambia el municipio
       setForm((prev) => ({ ...prev, id_parroquia: '' }))
@@ -148,15 +174,64 @@ function RegisterForm({ isOpen, onClose }) {
     )
   }
 
+  function normalizarTexto(t) {
+    return t
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^A-Z\s]/gi, '')
+      .trim().toUpperCase()
+  }
+
+  function palabrasIguales(a, b) {
+    const pa = normalizarTexto(a).split(/\s+/).filter(Boolean)
+    const pb = normalizarTexto(b).split(/\s+/).filter(Boolean)
+    if (pa.length === 0 || pb.length === 0) return false
+    for (const p of pa) {
+      if (!pb.includes(p)) return false
+    }
+    for (const p of pb) {
+      if (!pa.includes(p)) return false
+    }
+    return true
+  }
+
+  function validarOcrContraFormulario(datosOcr) {
+    const errores = {}
+    const { cedulaExtraida, nombresExtraidos } = datosOcr
+
+    if (cedulaExtraida) {
+      const cedulaForm = `${cedulaPrefijo}-${cedulaNumero}`
+      if (normalizarTexto(cedulaExtraida) !== normalizarTexto(cedulaForm)) {
+        errores.cedula = 'El número de cédula en el formulario no coincide con el de la imagen.'
+      }
+    }
+
+    if (nombresExtraidos) {
+      if (nombresExtraidos.apellidos) {
+        const apellidosForm = `${form.primer_apellido} ${form.segundo_apellido || ''}`.trim()
+        if (!palabrasIguales(nombresExtraidos.apellidos, apellidosForm)) {
+          errores.primer_apellido = 'Los apellidos no coinciden con los de la cédula.'
+          errores.segundo_apellido = 'Los apellidos no coinciden con los de la cédula.'
+        }
+      }
+
+      if (nombresExtraidos.nombres) {
+        const nombresForm = `${form.primer_nombre} ${form.segundo_nombre || ''}`.trim()
+        if (!palabrasIguales(nombresExtraidos.nombres, nombresForm)) {
+          errores.primer_nombre = 'Los nombres no coinciden con los de la cédula.'
+          errores.segundo_nombre = 'Los nombres no coinciden con los de la cédula.'
+        }
+      }
+    }
+
+    return errores
+  }
+
   const handleSubmit = async (event) => {
     event.preventDefault()
     setSubmitError('')
     setDocumentoUploadError('')
+    setOcrErrores({})
 
-    // Bloqueante en el frontend: sin documento de cédula no se puede validar la
-    // identidad del cultor. El archivo se sube en un segundo paso, después de crear
-    // el cultor (ver más abajo), ya que el backend necesita el id_cultor real para
-    // asociar el documento.
     if (archivoCedula.length === 0) {
       setSubmitError('Debes adjuntar la foto o documento de tu cédula para validar tu identidad.')
       return
@@ -166,18 +241,22 @@ function RegisterForm({ isOpen, onClose }) {
     setIsSubmitting(true)
 
     try {
-      // Solo se envían los campos que existen como columna real en `cultores`.
-      // Los opcionales (ej. correo_contacto, id_parroquia) se omiten si quedaron vacíos:
-      // el backend valida formato/tipo cuando el campo SÍ viene presente, aunque sea opcional.
+      const resultado = await validarCedulaRequest(archivo)
+      setDatosOcr(resultado)
+
+      const erroresOcr = validarOcrContraFormulario(resultado)
+      if (Object.keys(erroresOcr).length > 0) {
+        setOcrErrores(erroresOcr)
+        setSubmitError('Los datos del formulario no coinciden con los de la cédula. Revisa los campos marcados.')
+        setIsSubmitting(false)
+        return
+      }
+
       const payload = {
         ...Object.fromEntries(
           Object.entries(form).filter(([, valor]) => valor !== '')
         ),
-        // Ensamblados aquí en el formato exacto que exige el backend (V-12345678 /
-        // 0414-1234567), a partir del prefijo seleccionado + los dígitos escritos.
         cedula: `${cedulaPrefijo}-${cedulaNumero}`,
-        // Estado booleano aparte: nunca debe viajar como string ('true'/'false'),
-        // el backend lo valida estrictamente como boolean.
         esta_certificado: estaCertificado,
       }
       if (telefonoNumero) {
@@ -185,10 +264,6 @@ function RegisterForm({ isOpen, onClose }) {
       }
       const respuesta = await postularCultorRequest(payload)
 
-      // El cultor ya quedó creado en la BD en este punto. La subida del documento es
-      // un segundo paso, encadenado con el id_cultor real que recién devolvió el
-      // backend — si esta parte falla, la postulación NO se revierte, solo se le avisa
-      // al visitante para que pueda reenviar el documento más tarde.
       try {
         await subirCedulaCultorRequest(respuesta.id_cultor, archivo)
       } catch {
@@ -208,16 +283,17 @@ function RegisterForm({ isOpen, onClose }) {
       setFuncionalidadMarcada([])
       setRecaudosMarcados([])
       setArchivos([])
+      setDatosOcr(null)
+      setOcrErrores({})
       setEnviado(true)
     } catch (error) {
-      // El backend responde 400 cuando cédula/correo ya existen (restricción única).
-      // Se traduce a un mensaje amigable; el resto de errores muestran el mensaje del backend.
-      const esDuplicado = error.cause?.response?.status === 400
-      setSubmitError(
-        esDuplicado
-          ? 'Los datos ingresados (cédula o correo) ya se encuentran registrados en el sistema.'
-          : error.message
-      )
+      const status = error.cause?.response?.status
+      if (status === 409) {
+        const mensaje = error.cause?.response?.data?.error || error.message
+        setSubmitError(mensaje)
+      } else {
+        setSubmitError(error.message)
+      }
     } finally {
       setIsSubmitting(false)
     }
@@ -264,7 +340,8 @@ function RegisterForm({ isOpen, onClose }) {
                 required
                 value={form.primer_nombre}
                 onChange={handleChange}
-                placeholder="Ej. María José"
+                placeholder="Ej. María"
+                error={ocrErrores.primer_nombre}
               />
               <TextInput
                 label="Segundo nombre"
@@ -272,6 +349,7 @@ function RegisterForm({ isOpen, onClose }) {
                 value={form.segundo_nombre}
                 onChange={handleChange}
                 placeholder="Ej. Fernanda"
+                error={ocrErrores.segundo_nombre}
               />
               <TextInput
                 label="Primer Apellido"
@@ -279,7 +357,8 @@ function RegisterForm({ isOpen, onClose }) {
                 required
                 value={form.primer_apellido}
                 onChange={handleChange}
-                placeholder="Ej. Useche Rangel"
+                placeholder="Ej. Useche"
+                error={ocrErrores.primer_apellido}
               />
               <TextInput
                 label="Segundo apellido"
@@ -287,6 +366,7 @@ function RegisterForm({ isOpen, onClose }) {
                 value={form.segundo_apellido}
                 onChange={handleChange}
                 placeholder="Ej. Pérez"
+                error={ocrErrores.segundo_apellido}
               />
               <TextInput
                 label="Seudónimo"
@@ -299,10 +379,10 @@ function RegisterForm({ isOpen, onClose }) {
                 <span className="font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir">
                   Cédula de identidad <span> *</span>
                 </span>
-                <div className="flex items-center w-full bg-white/50 border border-cafe-noir/30 rounded-xl overflow-hidden focus-within:border-cafe-noir focus-within:ring-1 focus-within:ring-cafe-noir transition-colors">
+                <div className={`flex items-center w-full bg-white/50 border rounded-xl overflow-hidden transition-colors focus-within:ring-1 ${ocrErrores.cedula ? 'border-red-400 focus-within:border-red-500 focus-within:ring-red-400' : 'border-cafe-noir/30 focus-within:border-cafe-noir focus-within:ring-1 focus-within:ring-cafe-noir'}`}>
                   <select
                     value={cedulaPrefijo}
-                    onChange={(e) => setCedulaPrefijo(e.target.value)}
+                    onChange={(e) => { setCedulaPrefijo(e.target.value); setOcrErrores((prev) => { const n = { ...prev }; delete n.cedula; return n }) }}
                     className="border-none outline-none focus:ring-0 bg-transparent py-2.5 pl-3 pr-2 font-sans text-sm text-cafe-noir cursor-pointer"
                   >
                     {prefijosCedula.map((prefijo) => (
@@ -314,11 +394,14 @@ function RegisterForm({ isOpen, onClose }) {
                     required
                     inputMode="numeric"
                     value={cedulaNumero}
-                    onChange={(e) => setCedulaNumero(e.target.value.replace(/\D/g, ''))}
+                    onChange={(e) => { setCedulaNumero(e.target.value.replace(/\D/g, '')); setOcrErrores((prev) => { const n = { ...prev }; delete n.cedula; return n }) }}
                     placeholder="12345678"
                     className="flex-1 border-none outline-none focus:ring-0 bg-transparent py-2.5 pr-4 font-sans text-sm text-cafe-noir placeholder:text-cafe-noir/30"
                   />
                 </div>
+                {ocrErrores.cedula && (
+                  <p className="font-sans text-xs text-red-600">{ocrErrores.cedula}</p>
+                )}
               </div>
               <DateInput
                 label="Fecha de nacimiento"
@@ -562,7 +645,7 @@ function RegisterForm({ isOpen, onClose }) {
                 Requisito indispensable para validar tu identidad.
               </p>
               <div className="mt-3">
-                <Dropzone files={archivoCedula} onFilesChange={setArchivoCedula} accept="image/jpeg,image/png,image/webp" maxSizeMB={5} minWidth={600} minHeight={400} />
+                <Dropzone files={archivoCedula} onFilesChange={setArchivoCedula} accept="image/jpeg,image/png,image/webp" maxSizeMB={5} minWidth={600} minHeight={400} maxFiles={1} />
               </div>
             </div>
 

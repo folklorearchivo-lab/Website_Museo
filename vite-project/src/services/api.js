@@ -18,6 +18,23 @@ export async function postularCultorRequest(data) {
 // recién creado por la postulación. Ruta también pública (sin requireAuth en el
 // backend), ya que el visitante no tiene sesión en este punto del flujo. No fijamos
 // Content-Type a mano: el navegador debe generar el boundary del multipart solo.
+export async function validarCedulaRequest(archivo) {
+  try {
+    const formData = new FormData()
+    formData.append('archivo', archivo)
+
+    const response = await axios.post(`${API_URL}/documentos_cultor/validar-cedula`, formData)
+    return response.data
+  } catch (error) {
+    const data = error.response?.data
+    const errorMsg = data?.error || 'La imagen no corresponde a una Cédula de Identidad válida.'
+    const err = new Error(errorMsg, { cause: error })
+    err.detalles = data?.detalles || []
+    err.ocrData = data
+    throw err
+  }
+}
+
 export async function subirCedulaCultorRequest(idCultor, archivo) {
   try {
     const formData = new FormData()
@@ -108,8 +125,15 @@ export async function loginRequest(correo, password) {
     const response = await axios.post(`${API_URL}/auth/login`, { correo, password })
     return response.data
   } catch (error) {
-    const errorMsg = error.response?.data?.error || error.response?.data?.message || 'Credenciales inválidas'
-    throw new Error(errorMsg, { cause: error })
+    // Si el servidor respondió, extraemos su mensaje exacto
+    if (error.response?.data?.error) {
+      throw new Error(error.response.data.error)
+    }
+    if (error.response?.data?.message) {
+      throw new Error(error.response.data.message)
+    }
+    // Error sin respuesta del servidor (red, CORS, etc.)
+    throw new Error('Error de conexión con el servidor')
   }
 }
 

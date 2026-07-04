@@ -15,6 +15,9 @@ export function AuthProvider({ children }) {
 
   const login = async (correo, password) => {
     const data = await loginRequest(correo, password)
+    if (data?.user?.activo === false) {
+      throw new Error('Su usuario está inactivo. Por favor, contacte a la administración del archivo para reactivarlo.')
+    }
     const sesion = {
       id: data.user.id_usuario,
       nombres: data.user.primer_nombre,
