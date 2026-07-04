@@ -32,6 +32,7 @@ const links = [
   { href: '#inicio', label: 'Inicio' },
   { href: '#nosotros', label: 'Nosotros' },
   { href: '#eventos', label: 'Eventos' },
+  { href: '#efemerides', label: 'Efemérides' },
 ]
 
 function Navbar({ onOpenRegister, onOpenLogin, onOpenPanel }) {

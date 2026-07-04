@@ -23,6 +23,7 @@ export function AuthProvider({ children }) {
       nombres: data.user.primer_nombre,
       apellidos: data.user.primer_apellido,
       correo: data.user.correo,
+      passwordTemporal: Boolean(data.user.password_temporal),
       token: data.token,
     }
     setUser(sesion)
@@ -34,8 +35,19 @@ export function AuthProvider({ children }) {
     localStorage.removeItem(STORAGE_KEY)
   }
 
+  // Actualiza campos puntuales de la sesión (correo, passwordTemporal) sin re-loguear,
+  // usado tras editar el perfil o cambiar la contraseña desde el Portal del Cultor.
+  const actualizarSesion = (cambios) => {
+    setUser((prev) => {
+      if (!prev) return prev
+      const actualizado = { ...prev, ...cambios }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(actualizado))
+      return actualizado
+    })
+  }
+
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, actualizarSesion }}>
       {children}
     </AuthContext.Provider>
   )

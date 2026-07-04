@@ -122,7 +122,8 @@ export async function getOficiosRequest() {
 // Login real del cultor (POST /api/auth/login). Devuelve { message, user, token }.
 export async function loginRequest(correo, password) {
   try {
-    const response = await axios.post(`${API_URL}/auth/login`, { correo, password })
+    // Este sitio solo autentica cuentas de cultor (ver authController.login).
+    const response = await axios.post(`${API_URL}/auth/login`, { correo, password, portal: 'publico' })
     return response.data
   } catch (error) {
     // Si el servidor respondió, extraemos su mensaje exacto
@@ -134,6 +135,35 @@ export async function loginRequest(correo, password) {
     }
     // Error sin respuesta del servidor (red, CORS, etc.)
     throw new Error('Error de conexión con el servidor')
+  }
+}
+
+// Cambio real de contraseña del cultor logueado (POST /api/auth/change-password).
+export async function changePasswordRequest(currentPassword, newPassword, token) {
+  try {
+    const response = await axios.post(
+      `${API_URL}/auth/change-password`,
+      { currentPassword, newPassword },
+      { headers: { Authorization: `Bearer ${token}` } }
+    )
+    return response.data
+  } catch (error) {
+    const errorMsg = error.response?.data?.error || error.response?.data?.message || 'Error al cambiar la contraseña'
+    throw new Error(errorMsg, { cause: error })
+  }
+}
+
+// Actualiza el correo de acceso (Usuarios.correo) del cultor logueado (PUT /api/auth/profile).
+// Distinto de correo_contacto (Cultores), que se edita vía updateMiPerfilRequest.
+export async function updateProfileRequest(data, token) {
+  try {
+    const response = await axios.put(`${API_URL}/auth/profile`, data, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    return response.data
+  } catch (error) {
+    const errorMsg = error.response?.data?.error || error.response?.data?.message || 'Error al actualizar el perfil'
+    throw new Error(errorMsg, { cause: error })
   }
 }
 
@@ -192,6 +222,18 @@ export async function getExposicionActivaRequest() {
     return response.data
   } catch (error) {
     const errorMsg = error.response?.data?.error || error.response?.data?.message || 'Error al obtener la exposición activa'
+    throw new Error(errorMsg, { cause: error })
+  }
+}
+
+// Efemérides activas (ruta pública, sin auth). La sección "Efemérides" de la web
+// se oculta sola cuando esta lista viene vacía.
+export async function getEfemeridesPublicasRequest() {
+  try {
+    const response = await axios.get(`${API_URL}/efemerides/publicas`)
+    return response.data
+  } catch (error) {
+    const errorMsg = error.response?.data?.error || error.response?.data?.message || 'Error al obtener las efemérides'
     throw new Error(errorMsg, { cause: error })
   }
 }

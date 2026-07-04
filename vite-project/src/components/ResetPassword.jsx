@@ -1,7 +1,17 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { Eye, EyeOff } from 'lucide-react'
+import cesteriaImg from '../assets/Cesteria.jpeg'
 import { resetPasswordRequest } from '../services/api'
+
+// Misma regla que el backend (ver commonSchemas.js): mínimo 8 caracteres, al menos
+// una mayúscula y al menos un carácter especial.
+function validarPasswordSegura(password) {
+  if (password.length < 8) return 'La contraseña debe tener al menos 8 caracteres.'
+  if (!/[A-ZÁÉÍÓÚÑ]/.test(password)) return 'La contraseña debe tener al menos una letra mayúscula.'
+  if (!/[^A-Za-z0-9]/.test(password)) return 'La contraseña debe tener al menos un carácter especial.'
+  return ''
+}
 
 function ResetPassword() {
   const navigate = useNavigate()
@@ -30,8 +40,9 @@ function ResetPassword() {
       return
     }
 
-    if (password.length < 8) {
-      setError('La contraseña debe tener al menos 8 caracteres.')
+    const errorPassword = validarPasswordSegura(password)
+    if (errorPassword) {
+      setError(errorPassword)
       return
     }
 
@@ -48,8 +59,15 @@ function ResetPassword() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-linen p-4 sm:p-6">
-      <div className="w-full max-w-md rounded-[2rem] bg-[#F4F0E6] p-8 shadow-2xl shadow-black/10 sm:p-10 text-center">
+    <div
+      className="min-h-screen relative flex items-center justify-center bg-cover bg-center p-4 sm:p-6"
+      style={{ backgroundImage: `url(${cesteriaImg})` }}
+    >
+      {/* Capa translúcida: efecto cristalino y profundo sobre la foto */}
+      <div className="absolute inset-0 bg-cafe-noir/60" />
+
+      {/* Tarjeta del formulario, flotando sobre el fondo */}
+      <div className="relative z-10 w-full max-w-md rounded-[2rem] bg-[#F4F0E6] p-8 shadow-2xl shadow-black/30 sm:p-10 text-center">
         <span className="font-sans text-xs uppercase tracking-[0.1em] text-cafe-noir/80">
           Archivo Táchira
         </span>

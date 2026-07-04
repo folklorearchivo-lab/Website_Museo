@@ -6,6 +6,7 @@ import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import About from './components/About'
 import Eventos from './components/Eventos'
+import Efemerides from './components/Efemerides'
 import Directorio from './components/Directorio'
 import Gallery from './components/Gallery'
 import RegisterForm from './components/RegisterForm'
@@ -38,6 +39,7 @@ function HomePage({ autoOpenLogin = false }) {
       <Hero onOpenRegister={() => setIsRegisterOpen(true)} />
       <About />
       <Eventos />
+      <Efemerides />
       <Gallery />
       <Directorio onSelectCultor={setSelectedCultor} />
       <RegisterForm isOpen={isRegisterOpen} onClose={() => setIsRegisterOpen(false)} />

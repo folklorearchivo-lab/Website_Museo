@@ -181,6 +181,12 @@ function RegisterForm({ isOpen, onClose }) {
       .trim().toUpperCase()
   }
 
+  // A diferencia de normalizarTexto (que descarta dígitos, pensada para nombres),
+  // esta conserva letras Y números para poder comparar cédulas de verdad.
+  function normalizarCedula(t) {
+    return t.replace(/[^A-Z0-9]/gi, '').toUpperCase()
+  }
+
   function palabrasIguales(a, b) {
     const pa = normalizarTexto(a).split(/\s+/).filter(Boolean)
     const pb = normalizarTexto(b).split(/\s+/).filter(Boolean)
@@ -200,7 +206,7 @@ function RegisterForm({ isOpen, onClose }) {
 
     if (cedulaExtraida) {
       const cedulaForm = `${cedulaPrefijo}-${cedulaNumero}`
-      if (normalizarTexto(cedulaExtraida) !== normalizarTexto(cedulaForm)) {
+      if (normalizarCedula(cedulaExtraida) !== normalizarCedula(cedulaForm)) {
         errores.cedula = 'El número de cédula en el formulario no coincide con el de la imagen.'
       }
     }

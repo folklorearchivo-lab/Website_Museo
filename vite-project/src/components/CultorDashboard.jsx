@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
-import { Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff, AlertTriangle, ShieldCheck } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
-import { getMiPerfilRequest, getMisObrasRequest, updateMiPerfilRequest, appendCurriculumRequest } from '../services/api'
+import { getMiPerfilRequest, getMisObrasRequest, updateMiPerfilRequest, appendCurriculumRequest, changePasswordRequest, updateProfileRequest } from '../services/api'
 
 const estadoEstilos = {
   aprobado: 'bg-emerald-100 text-emerald-600 border-emerald-200/50',
@@ -9,22 +9,40 @@ const estadoEstilos = {
   rechazado: 'bg-red-100 text-red-600 border-red-200/50',
 }
 
+// Misma regla que el backend (ver commonSchemas.js): mínimo 8 caracteres, al menos
+// una mayúscula y al menos un carácter especial.
+function validarPasswordSegura(password) {
+  if (password.length < 8) return 'La contraseña debe tener al menos 8 caracteres.'
+  if (!/[A-ZÁÉÍÓÚÑ]/.test(password)) return 'La contraseña debe tener al menos una letra mayúscula.'
+  if (!/[^A-Za-z0-9]/.test(password)) return 'La contraseña debe tener al menos un carácter especial.'
+  return ''
+}
+
 const tabs = [
   { id: 'obras', label: 'Mis Obras' },
   { id: 'perfil', label: 'Mi Perfil' },
+  { id: 'seguridad', label: 'Seguridad y Configuración' },
 ]
 
 const camposPasswordIniciales = { actual: '', nueva: '', confirmar: '' }
 
 function CultorDashboard({ isOpen, onClose, onOpenUpload, initialTab }) {
-  const { user } = useAuth()
+  const { user, actualizarSesion } = useAuth()
   const [activeTab, setActiveTab] = useState(initialTab || 'obras')
   const [passwordForm, setPasswordForm] = useState(camposPasswordIniciales)
   const [passwordEnviado, setPasswordEnviado] = useState(false)
+  const [passwordError, setPasswordError] = useState('')
+  const [passwordSaving, setPasswordSaving] = useState(false)
   const [mostrarPassword, setMostrarPassword] = useState({ actual: false, nueva: false, confirmar: false })
   const toggleMostrarPassword = (campo) =>
     setMostrarPassword((prev) => ({ ...prev, [campo]: !prev[campo] }))
   const [wasOpen, setWasOpen] = useState(isOpen)
+
+  // Correo de acceso (login), distinto de correo_contacto (Cultores)
+  const [correoAcceso, setCorreoAcceso] = useState(user?.correo || '')
+  const [correoSaving, setCorreoSaving] = useState(false)
+  const [correoError, setCorreoError] = useState('')
+  const [correoSuccess, setCorreoSuccess] = useState('')
 
   // Edición de perfil
   const [editandoPerfil, setEditandoPerfil] = useState(false)
@@ -53,7 +71,10 @@ function CultorDashboard({ isOpen, onClose, onOpenUpload, initialTab }) {
   // (ajuste de estado durante el render, en vez de un efecto, para evitar un commit extra)
   if (isOpen !== wasOpen) {
     setWasOpen(isOpen)
-    if (isOpen) setActiveTab(initialTab || 'obras')
+    if (isOpen) {
+      setActiveTab(initialTab || 'obras')
+      setCorreoAcceso(user?.correo || '')
+    }
   }
 
   // Bloquea el scroll de la página pública mientras el panel privado está abierto
@@ -108,12 +129,48 @@ function CultorDashboard({ isOpen, onClose, onOpenUpload, initialTab }) {
     setPasswordForm((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handlePasswordSubmit = (e) => {
+  const handlePasswordSubmit = async (e) => {
     e.preventDefault()
-    // Simulación: no hay backend, solo limpiamos el formulario y mostramos confirmación.
-    setPasswordForm(camposPasswordIniciales)
-    setPasswordEnviado(true)
-    setTimeout(() => setPasswordEnviado(false), 3000)
+    setPasswordError('')
+
+    if (passwordForm.nueva !== passwordForm.confirmar) {
+      setPasswordError('Las contraseñas nuevas no coinciden.')
+      return
+    }
+    const errorPassword = validarPasswordSegura(passwordForm.nueva)
+    if (errorPassword) {
+      setPasswordError(errorPassword)
+      return
+    }
+
+    setPasswordSaving(true)
+    try {
+      await changePasswordRequest(passwordForm.actual, passwordForm.nueva, user.token)
+      actualizarSesion({ passwordTemporal: false })
+      setPasswordForm(camposPasswordIniciales)
+      setPasswordEnviado(true)
+      setTimeout(() => setPasswordEnviado(false), 3000)
+    } catch (err) {
+      setPasswordError(err.message)
+    } finally {
+      setPasswordSaving(false)
+    }
+  }
+
+  const handleCorreoSubmit = async (e) => {
+    e.preventDefault()
+    setCorreoError('')
+    setCorreoSuccess('')
+    setCorreoSaving(true)
+    try {
+      await updateProfileRequest({ correo: correoAcceso }, user.token)
+      actualizarSesion({ correo: correoAcceso })
+      setCorreoSuccess('Correo de acceso actualizado correctamente.')
+    } catch (err) {
+      setCorreoError(err.message)
+    } finally {
+      setCorreoSaving(false)
+    }
   }
 
   return (
@@ -414,98 +471,6 @@ function CultorDashboard({ isOpen, onClose, onOpenUpload, initialTab }) {
                     )}
                   </div>
 
-                  {/* Seguridad: cambio de contraseña simulado */}
-                  <div className="space-y-4">
-                    <span className="font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir">
-                      Seguridad
-                    </span>
-
-                    {passwordEnviado && (
-                      <div className="rounded-xl border border-emerald-200/50 bg-emerald-50/60 px-4 py-3 font-sans text-sm text-emerald-700">
-                        Tu contraseña fue actualizada (simulación local, sin conexión al servidor).
-                      </div>
-                    )}
-
-                    <form onSubmit={handlePasswordSubmit} className="space-y-4 rounded-2xl border border-cafe-noir/10 bg-white/50 p-6">
-                      <div>
-                        <label className="block font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir mb-2">
-                          Contraseña Actual
-                        </label>
-                        <div className="relative">
-                          <input
-                            type={mostrarPassword.actual ? 'text' : 'password'}
-                            name="actual"
-                            value={passwordForm.actual}
-                            onChange={handlePasswordChange}
-                            className="w-full rounded-xl border border-cafe-noir/20 bg-white/70 px-4 py-2.5 pr-10 font-sans text-sm shadow-sm focus:border-tertiary focus:outline-none focus:ring-1 focus:ring-tertiary"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => toggleMostrarPassword('actual')}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-cafe-noir/40 hover:text-cafe-noir/70 transition-colors"
-                            aria-label={mostrarPassword.actual ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                          >
-                            {mostrarPassword.actual ? <EyeOff size={18} /> : <Eye size={18} />}
-                          </button>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <div>
-                          <label className="block font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir mb-2">
-                            Nueva Contraseña
-                          </label>
-                          <div className="relative">
-                            <input
-                              type={mostrarPassword.nueva ? 'text' : 'password'}
-                              name="nueva"
-                              value={passwordForm.nueva}
-                              onChange={handlePasswordChange}
-                              className="w-full rounded-xl border border-cafe-noir/20 bg-white/70 px-4 py-2.5 pr-10 font-sans text-sm shadow-sm focus:border-tertiary focus:outline-none focus:ring-1 focus:ring-tertiary"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => toggleMostrarPassword('nueva')}
-                              className="absolute right-3 top-1/2 -translate-y-1/2 text-cafe-noir/40 hover:text-cafe-noir/70 transition-colors"
-                              aria-label={mostrarPassword.nueva ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                            >
-                              {mostrarPassword.nueva ? <EyeOff size={18} /> : <Eye size={18} />}
-                            </button>
-                          </div>
-                        </div>
-                        <div>
-                          <label className="block font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir mb-2">
-                            Confirmar Contraseña
-                          </label>
-                          <div className="relative">
-                            <input
-                              type={mostrarPassword.confirmar ? 'text' : 'password'}
-                              name="confirmar"
-                              value={passwordForm.confirmar}
-                              onChange={handlePasswordChange}
-                              className="w-full rounded-xl border border-cafe-noir/20 bg-white/70 px-4 py-2.5 pr-10 font-sans text-sm shadow-sm focus:border-tertiary focus:outline-none focus:ring-1 focus:ring-tertiary"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => toggleMostrarPassword('confirmar')}
-                              className="absolute right-3 top-1/2 -translate-y-1/2 text-cafe-noir/40 hover:text-cafe-noir/70 transition-colors"
-                              aria-label={mostrarPassword.confirmar ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                            >
-                              {mostrarPassword.confirmar ? <EyeOff size={18} /> : <Eye size={18} />}
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex justify-end pt-2">
-                        <button
-                          type="submit"
-                          className="rounded-full bg-tertiary px-6 py-2.5 font-sans text-xs font-semibold uppercase tracking-wide text-linen shadow-md transition-opacity hover:opacity-80"
-                        >
-                          Actualizar Contraseña
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-
                   {/* Currículum: agregar texto al resumen curricular */}
                   <div className="space-y-4">
                     <span className="font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir">
@@ -571,6 +536,171 @@ function CultorDashboard({ isOpen, onClose, onOpenUpload, initialTab }) {
                           className="rounded-full bg-tertiary px-6 py-2.5 font-sans text-xs font-semibold uppercase tracking-wide text-linen shadow-md transition-opacity hover:opacity-80 disabled:opacity-50"
                         >
                           {curriculumSaving ? 'Agregando...' : 'Agregar al Currículum'}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'seguridad' && (
+                <div className="space-y-10">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck size={18} className="text-tertiary" />
+                    <span className="font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir">
+                      Seguridad y Configuración
+                    </span>
+                  </div>
+
+                  {/* Correo de acceso: el usado para iniciar sesión (Usuarios.correo),
+                      distinto de correo_contacto (dato informativo de Cultores) */}
+                  <div className="space-y-4">
+                    <span className="font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir">
+                      Correo de Acceso
+                    </span>
+
+                    {correoSuccess && (
+                      <div className="rounded-xl border border-emerald-200/50 bg-emerald-50/60 px-4 py-3 font-sans text-sm text-emerald-700">
+                        {correoSuccess}
+                      </div>
+                    )}
+                    {correoError && (
+                      <div className="rounded-xl border border-red-200/50 bg-red-50/60 px-4 py-3 font-sans text-sm text-red-700">
+                        {correoError}
+                      </div>
+                    )}
+
+                    <form onSubmit={handleCorreoSubmit} className="space-y-4 rounded-2xl border border-cafe-noir/10 bg-white/50 p-6">
+                      <div>
+                        <label className="block font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir mb-2">
+                          Correo con el que inicias sesión
+                        </label>
+                        <input
+                          type="email"
+                          value={correoAcceso}
+                          onChange={(e) => setCorreoAcceso(e.target.value)}
+                          required
+                          className="w-full rounded-xl border border-cafe-noir/20 bg-white/70 px-4 py-2.5 font-sans text-sm shadow-sm focus:border-tertiary focus:outline-none focus:ring-1 focus:ring-tertiary"
+                        />
+                        <p className="mt-2 font-sans text-xs text-cafe-noir/50">
+                          Solo puedes cambiar el correo una vez al mes.
+                        </p>
+                      </div>
+                      <div className="flex justify-end pt-2">
+                        <button
+                          type="submit"
+                          disabled={correoSaving}
+                          className="rounded-full bg-tertiary px-6 py-2.5 font-sans text-xs font-semibold uppercase tracking-wide text-linen shadow-md transition-opacity hover:opacity-80 disabled:opacity-50"
+                        >
+                          {correoSaving ? 'Guardando...' : 'Actualizar Correo'}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+
+                  {/* Seguridad: cambio de contraseña real (POST /api/auth/change-password) */}
+                  <div className="space-y-4">
+                    <span className="font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir">
+                      Contraseña
+                    </span>
+
+                    {user?.passwordTemporal && (
+                      <div className="flex items-center gap-2 rounded-xl border border-amber-300/60 bg-amber-50/70 px-4 py-3 font-sans text-sm text-amber-800">
+                        <AlertTriangle size={16} className="shrink-0" />
+                        Tu contraseña es temporal (generada por el sistema). Cámbiala aquí para proteger tu cuenta.
+                      </div>
+                    )}
+
+                    {passwordEnviado && (
+                      <div className="rounded-xl border border-emerald-200/50 bg-emerald-50/60 px-4 py-3 font-sans text-sm text-emerald-700">
+                        Tu contraseña fue actualizada correctamente.
+                      </div>
+                    )}
+                    {passwordError && (
+                      <div className="rounded-xl border border-red-200/50 bg-red-50/60 px-4 py-3 font-sans text-sm text-red-700">
+                        {passwordError}
+                      </div>
+                    )}
+
+                    <form onSubmit={handlePasswordSubmit} className="space-y-4 rounded-2xl border border-cafe-noir/10 bg-white/50 p-6">
+                      <div>
+                        <label className="block font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir mb-2">
+                          Contraseña Actual
+                        </label>
+                        <div className="relative">
+                          <input
+                            type={mostrarPassword.actual ? 'text' : 'password'}
+                            name="actual"
+                            value={passwordForm.actual}
+                            onChange={handlePasswordChange}
+                            className="w-full rounded-xl border border-cafe-noir/20 bg-white/70 px-4 py-2.5 pr-10 font-sans text-sm shadow-sm focus:border-tertiary focus:outline-none focus:ring-1 focus:ring-tertiary"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => toggleMostrarPassword('actual')}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-cafe-noir/40 hover:text-cafe-noir/70 transition-colors"
+                            aria-label={mostrarPassword.actual ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                          >
+                            {mostrarPassword.actual ? <EyeOff size={18} /> : <Eye size={18} />}
+                          </button>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div>
+                          <label className="block font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir mb-2">
+                            Nueva Contraseña
+                          </label>
+                          <div className="relative">
+                            <input
+                              type={mostrarPassword.nueva ? 'text' : 'password'}
+                              name="nueva"
+                              value={passwordForm.nueva}
+                              onChange={handlePasswordChange}
+                              className="w-full rounded-xl border border-cafe-noir/20 bg-white/70 px-4 py-2.5 pr-10 font-sans text-sm shadow-sm focus:border-tertiary focus:outline-none focus:ring-1 focus:ring-tertiary"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => toggleMostrarPassword('nueva')}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-cafe-noir/40 hover:text-cafe-noir/70 transition-colors"
+                              aria-label={mostrarPassword.nueva ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                            >
+                              {mostrarPassword.nueva ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                          </div>
+                          <p className="mt-1.5 font-sans text-[11px] text-cafe-noir/50">
+                            Mínimo 8 caracteres, con una mayúscula y un carácter especial.
+                          </p>
+                        </div>
+                        <div>
+                          <label className="block font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir mb-2">
+                            Confirmar Contraseña
+                          </label>
+                          <div className="relative">
+                            <input
+                              type={mostrarPassword.confirmar ? 'text' : 'password'}
+                              name="confirmar"
+                              value={passwordForm.confirmar}
+                              onChange={handlePasswordChange}
+                              className="w-full rounded-xl border border-cafe-noir/20 bg-white/70 px-4 py-2.5 pr-10 font-sans text-sm shadow-sm focus:border-tertiary focus:outline-none focus:ring-1 focus:ring-tertiary"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => toggleMostrarPassword('confirmar')}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-cafe-noir/40 hover:text-cafe-noir/70 transition-colors"
+                              aria-label={mostrarPassword.confirmar ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                            >
+                              {mostrarPassword.confirmar ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex justify-end pt-2">
+                        <button
+                          type="submit"
+                          disabled={passwordSaving}
+                          className="rounded-full bg-tertiary px-6 py-2.5 font-sans text-xs font-semibold uppercase tracking-wide text-linen shadow-md transition-opacity hover:opacity-80 disabled:opacity-50"
+                        >
+                          {passwordSaving ? 'Guardando...' : 'Actualizar Contraseña'}
                         </button>
                       </div>
                     </form>
