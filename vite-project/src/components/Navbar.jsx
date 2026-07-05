@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { getNotificacionesRequest, marcarNotificacionesLeidasRequest, marcarNotificacionLeidaRequest } from '../services/api'
+import { getNotificacionesRequest, marcarNotificacionesLeidasRequest, marcarNotificacionLeidaRequest, getMiPerfilRequest } from '../services/api'
 import logoM from '../assets/LogoM.png'
 
 // Icono y color por `tipo` de notificación (los únicos valores que entrega el backend:
@@ -42,6 +42,7 @@ function Navbar({ onOpenRegister, onOpenLogin, onOpenPanel }) {
   const [scrolled, setScrolled] = useState(false)
   const [notificaciones, setNotificaciones] = useState([])
   const [marcandoLeidas, setMarcandoLeidas] = useState(false)
+  const [fotoPerfil, setFotoPerfil] = useState(null)
   const notificacionesRef = useRef(null)
   const cuentaRef = useRef(null)
   const { user, logout } = useAuth()
@@ -52,11 +53,15 @@ function Navbar({ onOpenRegister, onOpenLogin, onOpenPanel }) {
   useEffect(() => {
     if (!user) {
       setNotificaciones([])
+      setFotoPerfil(null)
       return
     }
     getNotificacionesRequest(user.token)
       .then(setNotificaciones)
       .catch(() => setNotificaciones([]))
+    getMiPerfilRequest(user.token)
+      .then((perfil) => setFotoPerfil(perfil.foto_perfil || null))
+      .catch(() => setFotoPerfil(null))
   }, [user])
 
   const marcarLeidas = async () => {
@@ -248,8 +253,12 @@ function Navbar({ onOpenRegister, onOpenLogin, onOpenPanel }) {
                     onClick={toggleCuenta}
                     className={`flex items-center gap-2.5 rounded-full pr-3 py-1 transition-colors ${scrolled ? 'hover:bg-cafe-noir/5' : 'hover:bg-white/10'}`}
                   >
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-tertiary text-linen font-bold font-sans shadow-md">
-                      {user.nombres.charAt(0)}
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-tertiary text-linen font-bold font-sans shadow-md overflow-hidden">
+                      {fotoPerfil ? (
+                        <img src={fotoPerfil} alt={user.nombres} className="h-full w-full object-cover" />
+                      ) : (
+                        user.nombres.charAt(0)
+                      )}
                     </div>
                     <span className={`font-sans text-sm font-medium transition-colors ${scrolled ? 'text-cafe-noir' : 'text-linen drop-shadow-md'}`}>
                       {user.nombres}
@@ -355,7 +364,16 @@ function Navbar({ onOpenRegister, onOpenLogin, onOpenPanel }) {
               {user ? (
                 <div className="px-3 py-2">
                   <div className="flex justify-between items-center mb-4">
-                    <span className={`block font-sans text-sm ${scrolled ? 'text-cafe-noir' : 'text-linen'}`}>Conectado como {user.nombres}</span>
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-tertiary text-linen font-bold font-sans shadow-md overflow-hidden shrink-0">
+                        {fotoPerfil ? (
+                          <img src={fotoPerfil} alt={user.nombres} className="h-full w-full object-cover" />
+                        ) : (
+                          user.nombres.charAt(0)
+                        )}
+                      </div>
+                      <span className={`block font-sans text-sm ${scrolled ? 'text-cafe-noir' : 'text-linen'}`}>Conectado como {user.nombres}</span>
+                    </div>
                     <button
                       onClick={toggleNotificaciones}
                       className={`relative p-2 rounded-full ${scrolled ? 'text-cafe-noir bg-cafe-noir/5' : 'text-linen bg-white/10'}`}

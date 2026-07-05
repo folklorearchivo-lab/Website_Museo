@@ -197,6 +197,12 @@ function CultorDashboard({ isOpen, onClose, onOpenUpload, initialTab }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-[#3a200d]/90 backdrop-blur-md">
+      <style>{`
+.custom-scrollbar::-webkit-scrollbar{width:8px}
+.custom-scrollbar::-webkit-scrollbar-track{background:transparent}
+.custom-scrollbar::-webkit-scrollbar-thumb{border-radius:9999px;background:rgba(68,50,35,0.2)}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover{background:rgba(68,50,35,0.4)}
+      `}</style>
       <div className="relative w-full max-w-4xl lg:max-w-7xl h-auto max-h-[90vh] sm:max-h-none lg:min-h-[85vh] lg:max-h-[92vh] rounded-[2rem] bg-[#F4F0E6] shadow-2xl shadow-black/50 flex flex-col overflow-hidden">
 
         {/* Cabecera editorial: tapa compacta del panel, mismo ancho y curva que la tarjeta */}
@@ -224,37 +230,38 @@ function CultorDashboard({ isOpen, onClose, onOpenUpload, initialTab }) {
         </div>
 
         {/* Cuerpo: sidebar + contenido, 100% privado */}
-        <div className="relative z-10 w-full flex-1 overflow-y-auto px-6 py-8 sm:px-10 sm:py-10 lg:px-14 lg:py-12 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-cafe-noir/20 hover:scrollbar-thumb-cafe-noir/40 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-cafe-noir/20 hover:[&::-webkit-scrollbar-thumb]:bg-cafe-noir/40">
-          <div className="flex flex-col gap-6 lg:flex-row lg:gap-12 lg:items-start">
+        <div className="relative z-10 w-full flex-1 flex flex-col gap-6 lg:flex-row lg:gap-0 overflow-hidden">
 
-            {/* Tabs: fila apilada/fluida en móvil y tablet, sidebar fijo desde lg: */}
-            <nav className="flex flex-col gap-2 md:flex-row md:flex-wrap md:items-center md:gap-3 lg:w-64 lg:shrink-0 lg:flex-col lg:items-stretch lg:gap-2">
+          {/* Sidebar - navegación */}
+          <aside className="lg:w-72 lg:shrink-0 lg:bg-gallery-cream lg:overflow-y-auto lg:flex lg:flex-col">
+            <nav className="flex flex-col gap-1 p-4 md:flex-row md:flex-wrap md:items-center md:gap-2 lg:flex-col lg:p-5 lg:gap-1">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`w-full md:w-auto lg:w-full whitespace-nowrap rounded-xl px-4 py-2.5 text-left md:text-center lg:text-left font-sans text-sm font-medium transition-colors ${
+                  className={`w-full md:w-auto lg:w-full whitespace-nowrap rounded-lg px-4 py-3 text-left md:text-center lg:text-left font-sans text-sm font-medium transition-all duration-200 border-l-4 ${
                     activeTab === tab.id
-                      ? 'bg-cafe-noir/10 text-cafe-noir font-semibold'
-                      : 'text-cafe-noir/60 hover:bg-cafe-noir/5'
+                      ? 'bg-cafe-noir/10 text-cafe-noir font-bold shadow-sm border-cafe-noir'
+                      : 'text-cafe-noir/60 hover:bg-cafe-noir/5 hover:text-cafe-noir border-transparent hover:border-cafe-noir/20'
                   }`}
                 >
                   {tab.label}
                 </button>
               ))}
 
-              <div className="border-t border-cafe-noir/10 my-1 md:hidden lg:block lg:my-2" />
+              <div className="border-t border-cafe-noir/10 my-3 md:hidden lg:block" />
 
               <button
                 onClick={onOpenUpload}
-                className="w-full md:w-auto md:ml-auto lg:w-full lg:ml-0 whitespace-nowrap rounded-xl bg-tertiary px-4 py-2.5 text-left md:text-center lg:text-left font-sans text-sm font-semibold text-linen shadow-md transition-opacity hover:opacity-80"
+                className="w-full md:w-auto md:ml-auto lg:w-full lg:ml-0 whitespace-nowrap rounded-lg bg-cafe-noir/8 px-4 py-3 text-left md:text-center lg:text-left font-sans text-sm font-semibold text-cafe-noir transition-all duration-200 hover:bg-cafe-noir/15 active:scale-[0.97] border-l-4 border-cafe-noir/20 hover:border-cafe-noir/40"
               >
                 + Nueva Postulación
               </button>
             </nav>
+          </aside>
 
             {/* Contenido de la pestaña activa: ocupa todo el espacio restante */}
-            <div className="min-w-0 flex-1">
+            <div className="min-w-0 flex-1 overflow-y-auto px-6 py-8 sm:px-10 sm:py-10 lg:px-14 lg:py-12 custom-scrollbar">
               {activeTab === 'obras' && (
                 <div className="w-full min-w-0 overflow-hidden space-y-4">
                   <span className="font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir">
@@ -760,7 +767,6 @@ function CultorDashboard({ isOpen, onClose, onOpenUpload, initialTab }) {
           </div>
         </div>
       </div>
-    </div>
   )
 }
 

@@ -25,7 +25,7 @@ function Footer() {
         >
           <path
             d="M0,70 C200,20 400,110 600,55 C800,0 1000,90 1200,40 L1200,120 L0,120 Z"
-            fill="#5C4631"
+            fill="#443223"
           />
         </svg>
       </div>
@@ -70,6 +70,22 @@ function Footer() {
                 )}
               </>
             )}
+          </div>
+
+          <div className="mt-6">
+            <h4 className="text-xs uppercase tracking-widest text-[#F4F0E6]">
+              Apoyado por
+            </h4>
+            <ul className="mt-3 space-y-2">
+              {apoyadoPor.map((nombre) => (
+                <li
+                  key={nombre}
+                  className="font-sans text-sm text-[#F4F0E6]/70"
+                >
+                  {nombre}
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
 

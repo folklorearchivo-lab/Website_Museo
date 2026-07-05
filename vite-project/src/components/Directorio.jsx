@@ -2,13 +2,18 @@ import { useState, useEffect } from 'react'
 import { getCultoresPublicosRequest } from '../services/api'
 import { socket } from '../services/socket'
 import { useReveal } from '../hooks/useReveal'
+import { useAuth } from '../context/AuthContext'
 
-function Directorio({ onSelectCultor }) {
+const CULTORES_POR_PAGINA = 6
+
+function Directorio({ onSelectCultor, onOpenLogin }) {
   const { ref, isVisible } = useReveal(0)
+  const { user } = useAuth()
   const [searchTerm, setSearchTerm] = useState('')
   const [filtroCategoria, setFiltroCategoria] = useState('Todas')
   const [cultores, setCultores] = useState([])
   const [isLoading, setIsLoading] = useState(true)
+  const [visibleCount, setVisibleCount] = useState(CULTORES_POR_PAGINA)
 
   useEffect(() => {
     let cancelled = false
@@ -38,6 +43,11 @@ function Directorio({ onSelectCultor }) {
     ...Array.from(new Set(cultores.map((c) => c.oficio).filter(Boolean))),
   ]
 
+  // Reiniciar paginación al cambiar filtros
+  useEffect(() => {
+    setVisibleCount(CULTORES_POR_PAGINA)
+  }, [searchTerm, filtroCategoria])
+
   const cultoresFiltrados = cultores.filter((cultor) => {
     const term = searchTerm.toLowerCase()
     const coincideTexto =
@@ -51,6 +61,9 @@ function Directorio({ onSelectCultor }) {
 
     return coincideTexto && coincideCategoria
   })
+
+  const cultoresVisibles = cultoresFiltrados.slice(0, visibleCount)
+  const hayMas = cultoresFiltrados.length > visibleCount
 
   return (
     <section id="directorio" ref={ref} className="relative scroll-mt-20 bg-linen py-20 lg:py-32 overflow-hidden border-t border-cafe-noir/10">
@@ -120,8 +133,9 @@ function Directorio({ onSelectCultor }) {
             ))}
           </div>
         ) : cultoresFiltrados.length > 0 ? (
+          <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {cultoresFiltrados.map((cultor) => (
+            {cultoresVisibles.map((cultor) => (
               <div key={cultor.id} className="group flex flex-col relative overflow-hidden rounded-2xl bg-white shadow-lg transition-transform hover:-translate-y-1 hover:shadow-xl">
                 {cultor.rol && (
                   <span className="absolute top-3 right-3 z-10 inline-flex items-center rounded-full bg-tertiary/90 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-white shadow-sm">
@@ -164,18 +178,42 @@ function Directorio({ onSelectCultor }) {
                     </div>
 
                     <div className="flex gap-2 mt-2">
-                      <button
-                        onClick={() => onSelectCultor(cultor)}
-                        className="flex-1 rounded bg-cafe-noir/5 py-2 font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir transition-colors hover:bg-cafe-noir hover:text-white"
-                      >
-                        Ver Perfil Completo
-                      </button>
+                      {user ? (
+                        <button
+                          onClick={() => onSelectCultor(cultor)}
+                          className="flex-1 rounded bg-cafe-noir/5 py-2 font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir transition-colors hover:bg-cafe-noir hover:text-white"
+                        >
+                          Ver Perfil Completo
+                        </button>
+                      ) : (
+                        <button
+                          onClick={onOpenLogin}
+                          className="flex-1 rounded border border-tertiary/30 py-2 font-sans text-xs font-semibold uppercase tracking-wide text-tertiary transition-colors hover:bg-tertiary hover:text-white"
+                        >
+                          Inicia sesión para ver perfil
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
               </div>
             ))}
           </div>
+
+          {hayMas && (
+            <div className="flex justify-center mt-10">
+              <button
+                onClick={() => setVisibleCount((prev) => prev + CULTORES_POR_PAGINA)}
+                className="inline-flex items-center gap-2 rounded-full border-2 border-cafe-noir/20 bg-transparent px-8 py-3 font-sans text-sm font-semibold uppercase tracking-wider text-cafe-noir transition-all hover:border-tertiary hover:bg-tertiary hover:text-white hover:shadow-lg"
+              >
+                Cargar más cultores
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </div>
+          )}
+          </>
         ) : (
           <div className="text-center py-20 bg-white/50 rounded-3xl border border-cafe-noir/5 max-w-2xl mx-auto">
             <svg className="mx-auto h-12 w-12 text-cafe-noir/20 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

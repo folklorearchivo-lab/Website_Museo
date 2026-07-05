@@ -141,13 +141,54 @@ function CultorProfile({ cultor, onClose }) {
             {cultor.oficio}
           </p>
 
-          <div className="flex items-center justify-center gap-1.5 text-cafe-noir/60 font-sans text-xs mb-8">
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="flex items-center justify-center gap-1.5 text-cafe-noir/60 font-sans text-sm mb-3">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
             {cultor.municipio && `${cultor.municipio}, Táchira`}
           </div>
+
+          {/* Datos adicionales del cultor */}
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-cafe-noir/80 font-sans text-sm mb-8">
+            {cultor.seudonimo && (
+              <span className="inline-flex items-center gap-1.5 bg-cafe-noir/5 rounded-full px-3 py-1">
+                <svg className="h-4 w-4 text-cafe-noir/50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                <span className="text-cafe-noir/40 mr-0.5">Seudónimo:</span> {cultor.seudonimo}
+              </span>
+            )}
+            {cultor.fecha_nacimiento && (
+              <span className="inline-flex items-center gap-1.5 bg-cafe-noir/5 rounded-full px-3 py-1">
+                <svg className="h-4 w-4 text-cafe-noir/50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                {(() => {
+                  const partes = cultor.fecha_nacimiento.split('T')[0].split('-');
+                  const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+                  return `${parseInt(partes[2])} de ${meses[parseInt(partes[1]) - 1]} de ${partes[0]}`;
+                })()}
+              </span>
+            )}
+            {cultor.genero && (
+              <span className="inline-flex items-center gap-1.5 bg-cafe-noir/5 rounded-full px-3 py-1">
+                <svg className="h-4 w-4 text-cafe-noir/50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /></svg>
+                {cultor.genero}
+              </span>
+            )}
+            {cultor.esta_certificado && (
+              <span className="inline-flex items-center gap-1.5 bg-tertiary/10 rounded-full px-3 py-1 text-tertiary font-semibold">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                Certificado
+              </span>
+            )}
+          </div>
+
+          {cultor.trayectoria_documentada && (
+            <div className="max-w-xl mx-auto mb-8 text-left">
+              <h3 className="font-sans text-sm uppercase tracking-[0.15em] text-cafe-noir/50 mb-3">Trayectoria</h3>
+              <p className="font-sans text-base text-cafe-noir/85 leading-relaxed whitespace-pre-wrap">
+                {cultor.trayectoria_documentada}
+              </p>
+            </div>
+          )}
 
           {cultor.resumen_curricular && (
             <div className="max-w-xl mx-auto">

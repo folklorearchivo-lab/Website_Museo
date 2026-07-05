@@ -61,7 +61,7 @@ function HomePage({ autoOpenLogin = false }) {
       <Eventos />
       <Efemerides />
       <Gallery />
-      <Directorio onSelectCultor={setSelectedCultor} />
+      <Directorio onSelectCultor={setSelectedCultor} onOpenLogin={() => setIsLoginOpen(true)} />
       <RegisterForm isOpen={isRegisterOpen} onClose={() => setIsRegisterOpen(false)} />
       <LoginForm isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
       <UploadObraForm isOpen={isUploadOpen} onClose={() => setIsUploadOpen(false)} />
@@ -71,7 +71,7 @@ function HomePage({ autoOpenLogin = false }) {
         onClose={() => setIsPanelOpen(false)}
         onOpenUpload={() => { setIsPanelOpen(false); setIsUploadOpen(true) }}
       />
-      {selectedCultor && (
+      {selectedCultor && user && (
         <CultorProfile cultor={selectedCultor} onClose={() => setSelectedCultor(null)} />
       )}
       <Footer />
