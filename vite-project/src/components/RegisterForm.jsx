@@ -188,16 +188,10 @@ function RegisterForm({ isOpen, onClose }) {
   }
 
   function palabrasIguales(a, b) {
-    const pa = normalizarTexto(a).split(/\s+/).filter(Boolean)
-    const pb = normalizarTexto(b).split(/\s+/).filter(Boolean)
-    if (pa.length === 0 || pb.length === 0) return false
-    for (const p of pa) {
-      if (!pb.includes(p)) return false
-    }
-    for (const p of pb) {
-      if (!pa.includes(p)) return false
-    }
-    return true
+    const textoA = normalizarTexto(a).replace(/\s+/g, '')
+    const textoB = normalizarTexto(b).replace(/\s+/g, '')
+    if (!textoA || !textoB) return false
+    return textoA === textoB
   }
 
   function validarOcrContraFormulario(datosOcr) {

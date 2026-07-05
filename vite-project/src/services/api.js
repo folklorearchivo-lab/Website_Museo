@@ -2,6 +2,17 @@ import axios from 'axios'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
 
+// Listado público de cultores activos para el directorio (sin auth).
+export async function getCultoresPublicosRequest() {
+  try {
+    const response = await axios.get(`${API_URL}/cultores/publico`)
+    return response.data
+  } catch (error) {
+    const errorMsg = error.response?.data?.error || error.response?.data?.message || 'Error al obtener el directorio'
+    throw new Error(errorMsg, { cause: error })
+  }
+}
+
 // Postulación pública de un cultor. Ruta abierta en el backend (sin requireAuth),
 // por lo tanto NO se envía Authorization aquí.
 export async function postularCultorRequest(data) {
@@ -299,6 +310,33 @@ export async function appendCurriculumRequest(texto, token) {
     return response.data
   } catch (error) {
     const errorMsg = error.response?.data?.error || error.response?.data?.message || 'Error al agregar al currículum'
+    throw new Error(errorMsg, { cause: error })
+  }
+}
+
+// Subir foto de perfil del cultor logueado (POST /cultores/subir-foto, multipart)
+export async function subirFotoPerfilRequest(file, token) {
+  try {
+    const formData = new FormData()
+    formData.append('archivo', file)
+    const response = await axios.post(`${API_URL}/cultores/subir-foto`, formData, {
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
+    })
+    return response.data
+  } catch (error) {
+    const errorMsg = error.response?.data?.error || error.response?.data?.message || 'Error al subir la foto'
+    throw new Error(errorMsg, { cause: error })
+  }
+}
+
+// Obras públicas (sin auth), opcionalmente filtradas por id_cultor
+export async function getObrasPublicasRequest(cultorId) {
+  try {
+    const params = cultorId ? { cultor_id: cultorId } : {}
+    const response = await axios.get(`${API_URL}/obras/publico`, { params })
+    return response.data
+  } catch (error) {
+    const errorMsg = error.response?.data?.error || error.response?.data?.message || 'Error al obtener las obras'
     throw new Error(errorMsg, { cause: error })
   }
 }

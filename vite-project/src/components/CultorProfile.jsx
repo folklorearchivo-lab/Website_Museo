@@ -1,8 +1,33 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import ObraCard from './ObraCard'
-import { obrasIniciales } from '../data/mockData'
+import { getObrasPublicasRequest } from '../services/api'
 
 function CultorProfile({ cultor, onClose }) {
+  const [obras, setObras] = useState([])
+  const [obrasLoading, setObrasLoading] = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+    if (cultor?.id) {
+      setObrasLoading(true)
+      getObrasPublicasRequest(cultor.id)
+        .then((data) => {
+          if (cancelled) return
+          const mapeadas = (Array.isArray(data) ? data : []).map((o) => ({
+            ...o,
+            id: o.id_obra,
+            categoria: o.tipo_patrimonio || 'N/A',
+            imagenUrl: o.multimedia && o.multimedia[0] ? o.multimedia[0].url_archivo : null,
+            autor: o.cultor ? `${o.cultor.primer_nombre} ${o.cultor.primer_apellido}` : 'Cultor Anónimo',
+          }))
+          setObras(mapeadas)
+        })
+        .catch(() => { if (!cancelled) setObras([]) })
+        .finally(() => { if (!cancelled) setObrasLoading(false) })
+    }
+    return () => { cancelled = true }
+  }, [cultor?.id])
+
   // Evitar scroll en el body cuando el modal está abierto
   useEffect(() => {
     document.body.style.overflow = 'hidden'
@@ -13,12 +38,12 @@ function CultorProfile({ cultor, onClose }) {
 
   if (!cultor) return null
 
-  const nombreCompleto = `${cultor.nombres} ${cultor.apellidos}`
-  
-  // Buscar las obras de este cultor en específico
-  const obrasDelCultor = obrasIniciales.filter(
-    (obra) => obra.autor === nombreCompleto || obra.autor.includes(cultor.nombres)
-  )
+  const iniciales = (cultor.nombre_completo || '--')
+    .split(' ')
+    .slice(0, 2)
+    .map((p) => p.charAt(0).toUpperCase())
+    .join('')
+    || '--'
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-dark-umber/60 p-4 sm:p-6 backdrop-blur-sm animate-in fade-in duration-300">
@@ -41,10 +66,10 @@ function CultorProfile({ cultor, onClose }) {
 
         {/* Header Profile - Mitad superior con imagen de fondo */}
         <div className="relative w-full h-[25vh] min-h-[180px] bg-cafe-noir flex items-end justify-center">
-          {cultor.fotoUrl ? (
+          {cultor.foto_perfil ? (
             <img 
-              src={cultor.fotoUrl} 
-              alt={nombreCompleto} 
+              src={cultor.foto_perfil} 
+              alt={cultor.nombre_completo} 
               className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay"
             />
           ) : (
@@ -56,11 +81,11 @@ function CultorProfile({ cultor, onClose }) {
 
           <div className="relative z-10 text-center px-4 translate-y-12">
             <div className="mx-auto h-28 w-28 rounded-full border-4 border-linen bg-gallery-cream shadow-xl overflow-hidden flex items-center justify-center">
-              {cultor.fotoUrl ? (
-                <img src={cultor.fotoUrl} alt={nombreCompleto} className="w-full h-full object-cover" />
+              {cultor.foto_perfil ? (
+                <img src={cultor.foto_perfil} alt={cultor.nombre_completo} className="w-full h-full object-cover" />
               ) : (
                 <span className="font-serif text-4xl text-tertiary">
-                  {cultor.nombres.charAt(0)}{cultor.apellidos.charAt(0)}
+                  {iniciales}
                 </span>
               )}
             </div>
@@ -69,14 +94,14 @@ function CultorProfile({ cultor, onClose }) {
 
         {/* Contenido Principal */}
         <div className="relative z-20 mx-auto max-w-2xl px-6 pt-16 pb-12 text-center w-full">
-          {cultor.estado && (
+          {cultor.rol && (
             <span className="inline-flex items-center rounded-full bg-tertiary px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-white shadow-sm mb-4">
-              {cultor.estado}
+              {cultor.rol}
             </span>
           )}
           
           <h1 className="font-serif text-3xl md:text-4xl text-cafe-noir mb-2">
-            {nombreCompleto}
+            {cultor.nombre_completo}
           </h1>
           
           <p className="font-sans text-sm uppercase tracking-[0.2em] text-tertiary mb-5">
@@ -88,14 +113,14 @@ function CultorProfile({ cultor, onClose }) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
-            {cultor.municipio}, Táchira
+            {cultor.municipio && `${cultor.municipio}, Táchira`}
           </div>
 
-          {cultor.bio && (
+          {cultor.resumen_curricular && (
             <div className="max-w-xl mx-auto">
               <div className="mx-auto h-px w-12 bg-primary/20 mb-5" />
               <p className="font-sans text-sm text-cafe-noir/80 leading-relaxed italic">
-                "{cultor.bio}"
+                &ldquo;{cultor.resumen_curricular}&rdquo;
               </p>
               <div className="mx-auto h-px w-12 bg-primary/20 mt-5 mb-10" />
             </div>
@@ -108,15 +133,19 @@ function CultorProfile({ cultor, onClose }) {
                 <h2 className="font-serif text-xl text-cafe-noir">Obras en el Archivo</h2>
               </div>
               <div className="text-right">
-                <span className="font-serif text-2xl text-tertiary">{obrasDelCultor.length}</span>
+                <span className="font-serif text-2xl text-tertiary">{obras.length}</span>
                 <span className="font-sans text-[10px] text-cafe-noir/60 ml-1.5 uppercase tracking-widest block sm:inline">registros</span>
               </div>
             </div>
 
-            {obrasDelCultor.length > 0 ? (
+            {obrasLoading ? (
+              <div className="text-center py-10 bg-gallery-cream/50 rounded-2xl border border-cafe-noir/5">
+                <p className="font-sans text-cafe-noir/60 text-sm">Cargando obras...</p>
+              </div>
+            ) : obras.length > 0 ? (
               <div className="columns-1 gap-6 sm:columns-2">
-                {obrasDelCultor.map((obra) => (
-                  <div key={obra.id} className="mb-6 break-inside-avoid">
+                {obras.map((obra) => (
+                  <div key={obra.id_obra} className="mb-6 break-inside-avoid">
                     <ObraCard obra={obra} />
                   </div>
                 ))}

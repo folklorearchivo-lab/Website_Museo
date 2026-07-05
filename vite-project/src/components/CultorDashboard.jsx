@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Eye, EyeOff, AlertTriangle, ShieldCheck } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
-import { getMiPerfilRequest, getMisObrasRequest, updateMiPerfilRequest, appendCurriculumRequest, changePasswordRequest, updateProfileRequest } from '../services/api'
+import { getMiPerfilRequest, getMisObrasRequest, updateMiPerfilRequest, appendCurriculumRequest, changePasswordRequest, updateProfileRequest, subirFotoPerfilRequest } from '../services/api'
 
 const estadoEstilos = {
   aprobado: 'bg-emerald-100 text-emerald-600 border-emerald-200/50',
@@ -62,6 +62,11 @@ function CultorDashboard({ isOpen, onClose, onOpenUpload, initialTab }) {
   const [perfil, setPerfil] = useState(null)
   const [perfilLoading, setPerfilLoading] = useState(false)
   const [perfilError, setPerfilError] = useState('')
+
+  // Foto de perfil
+  const [fotoUploading, setFotoUploading] = useState(false)
+  const [fotoError, setFotoError] = useState('')
+  const [fotoSuccess, setFotoSuccess] = useState('')
 
   // Obras reales del cultor logueado
   const [misObras, setMisObras] = useState([])
@@ -173,6 +178,23 @@ function CultorDashboard({ isOpen, onClose, onOpenUpload, initialTab }) {
     }
   }
 
+  const handleFotoUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setFotoUploading(true)
+    setFotoError('')
+    setFotoSuccess('')
+    try {
+      const data = await subirFotoPerfilRequest(file, user.token)
+      setPerfil((prev) => prev ? { ...prev, foto_perfil: data.foto_perfil } : null)
+      setFotoSuccess('Foto de perfil actualizada.')
+    } catch (err) {
+      setFotoError(err.message)
+    } finally {
+      setFotoUploading(false)
+    }
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-[#3a200d]/90 backdrop-blur-md">
       <div className="relative w-full max-w-4xl lg:max-w-7xl h-auto max-h-[90vh] sm:max-h-none lg:min-h-[85vh] lg:max-h-[92vh] rounded-[2rem] bg-[#F4F0E6] shadow-2xl shadow-black/50 flex flex-col overflow-hidden">
@@ -280,6 +302,33 @@ function CultorDashboard({ isOpen, onClose, onOpenUpload, initialTab }) {
 
               {activeTab === 'perfil' && (
                 <div className="space-y-10">
+                  {/* Foto de perfil */}
+                  <div className="space-y-4">
+                    <span className="font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir">
+                      Foto de Perfil
+                    </span>
+                    <div className="flex items-center gap-6 rounded-2xl border border-cafe-noir/10 bg-white/50 p-6">
+                      <div className="h-24 w-24 rounded-full border-4 border-linen bg-gallery-cream shadow-md overflow-hidden flex items-center justify-center shrink-0">
+                        {perfil?.foto_perfil ? (
+                          <img src={perfil.foto_perfil} alt="Foto de perfil" className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="font-serif text-3xl text-tertiary">
+                            {nombreCompleto.split(' ').slice(0, 2).map((p) => p.charAt(0)).join('').toUpperCase() || '--'}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        {fotoSuccess && <p className="font-sans text-sm text-emerald-700">{fotoSuccess}</p>}
+                        {fotoError && <p className="font-sans text-sm text-red-700">{fotoError}</p>}
+                        <label className="cursor-pointer rounded-full bg-tertiary px-5 py-2 font-sans text-xs font-semibold uppercase tracking-wide text-linen shadow-md transition-opacity hover:opacity-80 inline-block self-start">
+                          {fotoUploading ? 'Subiendo...' : 'Cambiar Foto'}
+                          <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleFotoUpload} className="hidden" disabled={fotoUploading} />
+                        </label>
+                        <p className="font-sans text-[11px] text-cafe-noir/50">JPG, PNG o WEBP · Máx 5 MB</p>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Resumen de Actividad */}
                   <div className="space-y-4">
                     <span className="font-sans text-xs font-semibold uppercase tracking-wide text-cafe-noir">
