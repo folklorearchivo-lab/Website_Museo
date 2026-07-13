@@ -74,7 +74,7 @@ function Directorio({ onSelectCultor, onOpenLogin }) {
     document.getElementById('directorio')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
-  // Avance automático tipo carrusel: cada 6s pasa al siguiente grupo de cultores y
+  // Avance automático tipo carrusel: cada 3.5s pasa al siguiente grupo de cultores y
   // vuelve al inicio al llegar al final. Se pausa mientras el usuario tiene el mouse
   // encima, y el temporizador se reinicia con cada cambio de página (manual o
   // automático) para que siempre haya el mismo respiro entre transiciones.
@@ -82,7 +82,7 @@ function Directorio({ onSelectCultor, onOpenLogin }) {
     if (totalPaginas <= 1 || pausado) return
     const intervalo = setInterval(() => {
       setPaginaActual((prev) => (prev >= totalPaginas ? 1 : prev + 1))
-    }, 6000)
+    }, 3500)
     return () => clearInterval(intervalo)
   }, [totalPaginas, pausado, paginaActual])
 
