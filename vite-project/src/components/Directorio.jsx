@@ -13,7 +13,8 @@ function Directorio({ onSelectCultor, onOpenLogin }) {
   const [filtroCategoria, setFiltroCategoria] = useState('Todas')
   const [cultores, setCultores] = useState([])
   const [isLoading, setIsLoading] = useState(true)
-  const [visibleCount, setVisibleCount] = useState(CULTORES_POR_PAGINA)
+  const [paginaActual, setPaginaActual] = useState(1)
+  const [pausado, setPausado] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -45,7 +46,7 @@ function Directorio({ onSelectCultor, onOpenLogin }) {
 
   // Reiniciar paginación al cambiar filtros
   useEffect(() => {
-    setVisibleCount(CULTORES_POR_PAGINA)
+    setPaginaActual(1)
   }, [searchTerm, filtroCategoria])
 
   const cultoresFiltrados = cultores.filter((cultor) => {
@@ -62,8 +63,28 @@ function Directorio({ onSelectCultor, onOpenLogin }) {
     return coincideTexto && coincideCategoria
   })
 
-  const cultoresVisibles = cultoresFiltrados.slice(0, visibleCount)
-  const hayMas = cultoresFiltrados.length > visibleCount
+  const totalPaginas = Math.max(1, Math.ceil(cultoresFiltrados.length / CULTORES_POR_PAGINA))
+  const cultoresVisibles = cultoresFiltrados.slice(
+    (paginaActual - 1) * CULTORES_POR_PAGINA,
+    paginaActual * CULTORES_POR_PAGINA
+  )
+
+  const irAPagina = (pagina) => {
+    setPaginaActual(pagina)
+    document.getElementById('directorio')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  // Avance automático tipo carrusel: cada 6s pasa al siguiente grupo de cultores y
+  // vuelve al inicio al llegar al final. Se pausa mientras el usuario tiene el mouse
+  // encima, y el temporizador se reinicia con cada cambio de página (manual o
+  // automático) para que siempre haya el mismo respiro entre transiciones.
+  useEffect(() => {
+    if (totalPaginas <= 1 || pausado) return
+    const intervalo = setInterval(() => {
+      setPaginaActual((prev) => (prev >= totalPaginas ? 1 : prev + 1))
+    }, 6000)
+    return () => clearInterval(intervalo)
+  }, [totalPaginas, pausado, paginaActual])
 
   return (
     <section id="directorio" ref={ref} className="relative scroll-mt-20 bg-linen py-20 lg:py-32 overflow-hidden border-t border-cafe-noir/10">
@@ -134,7 +155,35 @@ function Directorio({ onSelectCultor, onOpenLogin }) {
           </div>
         ) : cultoresFiltrados.length > 0 ? (
           <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <style>{`
+            @keyframes directorioFade {
+              from { opacity: 0; transform: translateX(16px); }
+              to { opacity: 1; transform: translateX(0); }
+            }
+            .directorio-carrusel-track {
+              animation: directorioFade 0.5s ease;
+            }
+          `}</style>
+          <div
+            className="flex items-center gap-2 sm:gap-4 lg:gap-6"
+            onMouseEnter={() => setPausado(true)}
+            onMouseLeave={() => setPausado(false)}
+          >
+            {totalPaginas > 1 && (
+              <button
+                type="button"
+                onClick={() => irAPagina(Math.max(1, paginaActual - 1))}
+                disabled={paginaActual === 1}
+                aria-label="Cultores anteriores"
+                className="flex h-12 w-12 shrink-0 items-center justify-center self-center rounded-full border border-cafe-noir/10 bg-white text-cafe-noir shadow-xl transition-all hover:bg-tertiary hover:text-white hover:scale-105 disabled:pointer-events-none disabled:opacity-30 lg:h-14 lg:w-14"
+              >
+                <svg className="h-5 w-5 lg:h-6 lg:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+            )}
+
+          <div key={paginaActual} className="directorio-carrusel-track grid min-w-0 flex-1 grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {cultoresVisibles.map((cultor) => (
               <div key={cultor.id} className="group flex flex-col relative overflow-hidden rounded-2xl bg-white shadow-lg transition-transform hover:-translate-y-1 hover:shadow-xl">
                 {cultor.rol && (
@@ -229,19 +278,20 @@ function Directorio({ onSelectCultor, onOpenLogin }) {
             ))}
           </div>
 
-          {hayMas && (
-            <div className="flex justify-center mt-10">
+            {totalPaginas > 1 && (
               <button
-                onClick={() => setVisibleCount((prev) => prev + CULTORES_POR_PAGINA)}
-                className="inline-flex items-center gap-2 rounded-full border-2 border-cafe-noir/20 bg-transparent px-8 py-3 font-sans text-sm font-semibold uppercase tracking-wider text-cafe-noir transition-all hover:border-tertiary hover:bg-tertiary hover:text-white hover:shadow-lg"
+                type="button"
+                onClick={() => irAPagina(Math.min(totalPaginas, paginaActual + 1))}
+                disabled={paginaActual === totalPaginas}
+                aria-label="Más cultores"
+                className="flex h-12 w-12 shrink-0 items-center justify-center self-center rounded-full border border-cafe-noir/10 bg-white text-cafe-noir shadow-xl transition-all hover:bg-tertiary hover:text-white hover:scale-105 disabled:pointer-events-none disabled:opacity-30 lg:h-14 lg:w-14"
               >
-                Cargar más cultores
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                <svg className="h-5 w-5 lg:h-6 lg:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </button>
-            </div>
-          )}
+            )}
+          </div>
           </>
         ) : (
           <div className="text-center py-20 bg-white/50 rounded-3xl border border-cafe-noir/5 max-w-2xl mx-auto">
