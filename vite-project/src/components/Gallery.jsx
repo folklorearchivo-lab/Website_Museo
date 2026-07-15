@@ -51,7 +51,7 @@ function Gallery() {
     <section
       id="galeria"
       ref={ref}
-      className="relative scroll-mt-20 overflow-hidden bg-gallery-cream py-28"
+      className="relative scroll-mt-20 bg-gallery-cream py-28"
     >
       <div className="pointer-events-none absolute top-0 w-full h-[12rem] bg-gradient-to-b from-linen via-linen/60 to-linen/0" />
 

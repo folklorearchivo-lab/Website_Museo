@@ -7,6 +7,7 @@ function Eventos() {
   const { ref, isVisible } = useReveal(0)
   const [eventoActual, setEventoActual] = useState(null)
   const [obrasEvento, setObrasEvento] = useState([])
+  const [fotosDirectas, setFotosDirectas] = useState([])
 
   useEffect(() => {
     const fetchExposicion = async () => {
@@ -14,10 +15,12 @@ function Eventos() {
         const data = await getExposicionActivaRequest()
         if (data && data.exposicion) {
           setEventoActual({
-            titulo: data.exposicion.titulo,
+            titulo: data.exposicion.nombre_exposicion,
             descripcion: data.exposicion.descripcion,
             fechaInicio: data.exposicion.fecha_inicio,
-            fechaFin: data.exposicion.fecha_fin
+            fechaFin: data.exposicion.fecha_fin,
+            organizador: data.exposicion.organizador,
+            lugarFisico: data.exposicion.lugar_fisico
           })
           
           if (data.obras && data.obras.length > 0) {
@@ -29,6 +32,14 @@ function Eventos() {
               autor: o.cultor ? `${o.cultor.primer_nombre} ${o.cultor.primer_apellido}` : 'Cultor Anónimo',
               ubicacion: o.ubicacion_actual || 'Ubicación no especificada'
             })))
+          } else {
+            setObrasEvento([])
+          }
+
+          if (data.fotosDirectas && data.fotosDirectas.length > 0) {
+            setFotosDirectas(data.fotosDirectas)
+          } else {
+            setFotosDirectas([])
           }
         }
       } catch (error) {
@@ -36,6 +47,12 @@ function Eventos() {
       }
     }
     fetchExposicion()
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') fetchExposicion()
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => document.removeEventListener('visibilitychange', handleVisibility)
   }, [])
 
   const formatFecha = (fechaString) => {
@@ -67,17 +84,33 @@ function Eventos() {
             <div className="flex flex-col items-center">
               {/* Encabezado elegante sin caja */}
               <div className="text-center max-w-3xl">
-                <span className="font-sans text-xs uppercase tracking-[0.25em] text-tertiary">
+                <span className="font-sans text-sm md:text-base font-semibold uppercase tracking-[0.25em] text-tertiary">
                   Exposición Actual
                 </span>
-                <h2 className="mt-4 font-serif text-4xl text-cafe-noir lg:text-5xl capitalize">
+                <h2 className="mt-4 font-serif text-4xl text-cafe-noir lg:text-5xl leading-tight">
                   {eventoActual.titulo}
                 </h2>
-                <div className="mx-auto mt-6 h-px w-20 bg-primary" />
+                <div className="mx-auto mt-6 h-px w-20 bg-primary/40" />
                 {eventoActual.descripcion && (
                   <p className="mx-auto mt-6 max-w-xl font-sans leading-relaxed text-primary">
                     {eventoActual.descripcion}
                   </p>
+                )}
+
+                {/* Organizador y Lugar */}
+                {(eventoActual.organizador || eventoActual.lugarFisico) && (
+                  <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 font-sans text-sm text-cafe-noir/70">
+                    {eventoActual.organizador && (
+                      <span>
+                        <strong className="font-semibold text-cafe-noir">Organiza:</strong> {eventoActual.organizador}
+                      </span>
+                    )}
+                    {eventoActual.lugarFisico && (
+                      <span>
+                        <strong className="font-semibold text-cafe-noir">Lugar:</strong> {eventoActual.lugarFisico}
+                      </span>
+                    )}
+                  </div>
                 )}
 
                 {/* Bloque de Fechas Limpio */}
@@ -98,19 +131,31 @@ function Eventos() {
                 </div>
               </div>
 
-              {/* Obras */}
+              {/* Obras y Fotos */}
               <div className="mt-24 w-full">
-                {obrasEvento.length > 0 ? (
+                {(obrasEvento.length > 0 || fotosDirectas.length > 0) ? (
                   <div className="columns-1 gap-8 sm:columns-2 lg:columns-3">
                     {obrasEvento.map((obra) => (
                       <div key={obra.id} className="mb-8 break-inside-avoid">
                         <ObraCard obra={obra} />
                       </div>
                     ))}
+                    {fotosDirectas.map((foto) => (
+                      <div key={`foto-${foto.id_foto}`} className="mb-8 break-inside-avoid">
+                        <div className="group overflow-hidden rounded-2xl bg-white shadow-lg">
+                          <img
+                            src={foto.url_archivo}
+                            alt="Foto de exposición"
+                            className="w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            style={{ aspectRatio: '3/4' }}
+                          />
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 ) : (
                   <p className="text-center font-sans text-lg text-primary/70">
-                    Aún no hay obras asignadas a esta exposición.
+                    Aún no hay obras ni fotos asignadas a esta exposición.
                   </p>
                 )}
               </div>
