@@ -10,7 +10,7 @@ const secciones = [
     titulo: '1. Introducción',
     contenido: (
       <p>
-        El <strong>Portal Web del Archivo de Folklore Región Táchira</strong> es la plataforma
+        El <strong>Portal Web del Archivo Regional del Folklore y Patrimonio Cultural «Luis Felipe Ramón y Rivera»</strong> es la plataforma
         pública donde los cultores pueden registrarse, gestionar su perfil, postular sus obras
         y expresiones culturales, y formar parte del inventario patrimonial de la región.
         Este manual le guiará en el uso de todas las herramientas disponibles en el portal.
@@ -248,8 +248,8 @@ export default function ManualWeb() {
           <div className="manual-content" ref={contentRef}>
             <div className="manual-portada">
               <img src={logoM} alt="Museo del Táchira" className="h-24 w-auto mx-auto mb-4" />
-              <h2>Archivo de Folklore</h2>
-              <h3>REGIÓN TÁCHIRA</h3>
+              <h2>Archivo Regional del Folklore y Patrimonio Cultural</h2>
+              <h3>«Luis Felipe Ramón y Rivera»</h3>
               <p className="manual-portada-sub">Manual de Usuario — Portal Web del Cultor</p>
               <p className="manual-portada-version">Versión 1.0</p>
             </div>
@@ -271,7 +271,7 @@ export default function ManualWeb() {
             ))}
 
             <div className="manual-footer-page">
-              <p>Archivo de Folklore Región Táchira — Documento generado electrónicamente</p>
+              <p>Archivo Regional del Folklore y Patrimonio Cultural «Luis Felipe Ramón y Rivera» — Documento generado electrónicamente</p>
             </div>
           </div>
         </div>

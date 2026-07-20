@@ -342,8 +342,8 @@ function CultorDashboard({ isOpen, onClose, onOpenUpload, initialTab }) {
           </button>
 
           <div className="flex flex-col items-center justify-center gap-1 leading-tight">
-            <span className="font-sans text-xs uppercase tracking-[0.2em] text-warm-sand/80">
-              Área Privada · Archivo Táchira
+            <span className="font-sans text-xs uppercase tracking-[0.15em] text-warm-sand/80 text-center">
+              Área Privada · Archivo Regional del Folklore y Patrimonio Cultural «Luis Felipe Ramón y Rivera»
             </span>
             <h2 className="font-serif text-2xl sm:text-3xl text-gallery-cream leading-tight">
               Portal del Cultor

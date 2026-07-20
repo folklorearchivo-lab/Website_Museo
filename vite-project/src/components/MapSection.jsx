@@ -26,6 +26,7 @@ function MapSection() {
 
     // Capa de losetas de OpenStreetMap
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(map)
@@ -55,13 +56,21 @@ function MapSection() {
         `
       <div style="font-family: 'Plus Jakarta Sans', sans-serif; color: #291804; padding: 4px;">
         <h4 style="font-weight: 700; margin: 0; font-size: 14px;">Museo del Táchira</h4>
-        <p style="margin: 4px 0 0 0; font-size: 12px; color: #807471;">Hacienda Paramillo · Archivo del Folklore</p>
+        <p style="margin: 4px 0 0 0; font-size: 11px; color: #807471;">Hacienda Paramillo · Archivo Regional del Folklore y Patrimonio Cultural «Luis Felipe Ramón y Rivera»</p>
       </div>
     `
       )
       .openPopup()
 
+    // Forzar recalculo de dimensiones para cargar tiles correctamente
+    const timer = setTimeout(() => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.invalidateSize()
+      }
+    }, 250)
+
     return () => {
+      clearTimeout(timer)
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove()
         mapInstanceRef.current = null
@@ -69,24 +78,31 @@ function MapSection() {
     }
   }, [])
 
+  // Recalcular tamaño cuando el componente entra en vista por la animación de scroll
+  useEffect(() => {
+    if (isVisible && mapInstanceRef.current) {
+      const timer = setTimeout(() => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize()
+        }
+      }, 200)
+      return () => clearTimeout(timer)
+    }
+  }, [isVisible])
+
   const defaultDireccion =
     'Avenida Universidad, Hacienda Paramillo, San Cristóbal, Estado Táchira, Venezuela.'
   const defaultHorario =
     'Martes a Viernes: 8:00 AM – 4:00 PM\nSábados y Domingos: 10:00 AM – 4:00 PM'
 
   return (
-    <section
-      id="ubicacion"
-      ref={ref}
-      className="relative scroll-mt-20 bg-gallery-cream py-20 lg:py-32 overflow-hidden border-t border-cafe-noir/10"
-    >
-      <div className="mx-auto max-w-6xl px-6">
-        <div className="flex flex-col gap-12 lg:flex-row lg:items-center lg:gap-16">
-          {/* Columna de Texto e Información de Contacto */}
-          <div
-            className={`lg:w-5/12 text-left transition-all duration-1000 ease-out transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}
-          >
-            <span className="text-xs uppercase tracking-widest text-[#B4533C] font-semibold">
+    <section id="ubicacion" className="relative bg-linen py-20 lg:py-28 overflow-hidden">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+          
+          {/* Información Institucional a la Izquierda */}
+          <div className="lg:col-span-5" ref={ref}>
+            <span className="font-sans text-xs font-semibold uppercase tracking-[0.2em] text-[#B4533C]">
               Ubicación Física
             </span>
             <h2 className="mt-4 font-serif text-4xl text-cafe-noir lg:text-5xl leading-tight">
@@ -95,7 +111,7 @@ function MapSection() {
             <div className="mt-6 h-px w-20 bg-[#B4533C]/40" />
 
             <p className="mt-6 font-sans text-base text-cafe-noir/80 leading-relaxed">
-              El Archivo Regional del Folklore "Luis Felipe Ramón y Rivera" se encuentra ubicado en las históricas instalaciones de la Hacienda Paramillo, sede del Museo del Táchira. Ven a conocer nuestras colecciones físicas y material histórico recopilado.
+              El Archivo Regional del Folklore y Patrimonio Cultural «Luis Felipe Ramón y Rivera» se encuentra ubicado en las históricas instalaciones de la Hacienda Paramillo, sede del Museo del Táchira. Ven a conocer nuestras colecciones físicas y material histórico recopilado.
             </p>
 
             {/* Ficha de Detalles de Contacto */}
@@ -167,14 +183,14 @@ function MapSection() {
 
           {/* Columna del Mapa */}
           <div
-            className={`lg:w-7/12 w-full transition-all duration-1000 ease-out delay-200 transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}
+            className={`lg:col-span-7 w-full transition-all duration-1000 ease-out delay-200 transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}
           >
-            <div className="relative h-[350px] sm:h-[450px] w-full rounded-3xl overflow-hidden shadow-2xl shadow-cafe-noir/10 border-4 border-white z-10">
-              <div ref={mapRef} className="h-full w-full" />
+            <div className="relative h-[380px] sm:h-[480px] w-full rounded-3xl overflow-hidden shadow-2xl shadow-cafe-noir/10 border-4 border-white z-10 bg-stone-100">
+              <div ref={mapRef} className="h-full w-full relative z-10" style={{ minHeight: '380px' }} />
             </div>
             {/* Círculos decorativos en el fondo */}
-            <div className="absolute -bottom-10 -right-10 z-0 h-64 w-64 rounded-full border border-[#B4533C]/10"></div>
-            <div className="absolute -top-10 -left-10 z-0 h-40 w-40 rounded-full border border-[#B4533C]/5"></div>
+            <div className="absolute -bottom-10 -right-10 z-0 h-64 w-64 rounded-full border border-[#B4533C]/10 pointer-events-none"></div>
+            <div className="absolute -top-10 -left-10 z-0 h-40 w-40 rounded-full border border-[#B4533C]/5 pointer-events-none"></div>
           </div>
         </div>
       </div>

@@ -6,7 +6,7 @@ function About() {
   const { ref, isVisible } = useReveal(0.2)
   const { configWeb, loadingConfig } = useConfig()
 
-  const defaultAboutText = `El **Archivo Regional de Folklore "Luis Felipe Ramón y Rivera"** fue creado el 21 de junio de 1993 con la firme misión de investigar científicamente y preservar las expresiones de nuestro patrimonio cultural tradicional. Desde sus primeros años, ha trabajado para crear conciencia sobre la necesaria protección de la memoria histórica en todos los municipios del estado.
+  const defaultAboutText = `El **Archivo Regional del Folklore y Patrimonio Cultural «Luis Felipe Ramón y Rivera»** fue creado el 21 de junio de 1993 con la firme misión de investigar científicamente y preservar las expresiones de nuestro patrimonio cultural tradicional. Desde sus primeros años, ha trabajado para crear conciencia sobre la necesaria protección de la memoria histórica en todos los municipios del estado.
 
 Tras años de evolución y compromiso con la cultura, el 30 de septiembre de 2008, el Archivo se integró formalmente a las instalaciones del Museo del Táchira. Hoy en día, desde esta sede, continuamos nuestra labor como centro de investigación para recopilar, estudiar y difundir sistemáticamente las manifestaciones, creencias y costumbres que nos definen.`
 

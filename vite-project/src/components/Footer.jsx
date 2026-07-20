@@ -1,4 +1,31 @@
-const apoyadoPor = ['Dirección de Cultura', 'Museo del Táchira', 'UNEFA']
+import logoGobernacion from '../assets/logos/logo_gobernacion.png'
+import logoMuseo from '../assets/logos/logo_museo.png'
+import logoDireccionCultura from '../assets/logos/logo_direccion_cultura.png'
+
+const apoyadoPor = [
+  {
+    nombre: 'Dirección de Cultura',
+    logo: logoDireccionCultura,
+    alt: 'Logo Dirección de Cultura',
+    imgClasses: 'h-7 sm:h-8 max-w-[100px]',
+  },
+  {
+    nombre: 'Museo del Táchira',
+    logo: logoMuseo,
+    alt: 'Logo Museo del Táchira',
+    imgClasses: 'h-7 sm:h-8 max-w-[100px]',
+  },
+  {
+    nombre: 'Gobernación del Estado Táchira',
+    logo: logoGobernacion,
+    alt: 'Logo Gobernación del Estado Táchira',
+    imgClasses: 'h-9 sm:h-[42px] max-w-[150px]',
+  },
+  {
+    nombre: 'UNEFA',
+    logo: null,
+  },
+]
 
 const equipoDesarrollo = [
   'Julieth Andrade',
@@ -9,11 +36,9 @@ const equipoDesarrollo = [
 ]
 
 function Footer() {
-
   return (
     <footer className="relative bg-gradient-to-b from-[#5C4631] to-cafe-noir text-[#F4F0E6]">
-      {/* Shape divider: transición tipo montañas entre la sección anterior (crema) y el footer oscuro.
-          El fill coincide exactamente con el from- del degradado para que el empalme sea invisible. */}
+      {/* Shape divider: transición tipo montañas entre la sección anterior (crema) y el footer oscuro. */}
       <div className="absolute top-0 left-0 w-full -translate-y-[99%] overflow-hidden leading-[0]">
         <svg
           viewBox="0 0 1200 120"
@@ -27,8 +52,8 @@ function Footer() {
         </svg>
       </div>
 
-      {/* Fotografía de fachada arquitectónica (demo Unsplash), con opacidad baja */}
-      <div className="absolute inset-0 overflow-hidden">
+      {/* Fotografía de fachada arquitectónica clásica con overlay */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <img
           src="https://images.unsplash.com/photo-1503095396549-807759245b35?auto=format&fit=crop&w=1600&q=80"
           alt="Fachada arquitectónica clásica, referencia para el Museo del Táchira"
@@ -37,57 +62,74 @@ function Footer() {
         <div className="absolute inset-0 bg-cafe-noir/85" />
       </div>
 
-      <div className="relative z-10 mx-auto grid max-w-5xl grid-cols-1 gap-x-10 gap-y-8 px-4 pt-12 pb-8 sm:px-6 sm:pt-16 md:grid-cols-2 lg:grid-cols-3">
-        <div>
-          <h4 className="text-xs uppercase tracking-widest text-[#F4F0E6]">
-            Apoyado por
-          </h4>
-          <ul className="mt-3 space-y-2">
-            {apoyadoPor.map((nombre) => (
-              <li
-                key={nombre}
-                className="font-sans text-sm text-[#F4F0E6]/70"
-              >
-                {nombre}
-              </li>
-            ))}
-          </ul>
-        </div>
+      <div className="relative z-10 mx-auto max-w-6xl px-4 pt-12 pb-8 sm:px-6 sm:pt-16">
+        <div className="grid grid-cols-1 gap-x-10 gap-y-10 md:grid-cols-2 lg:grid-cols-3 items-start">
+          
+          {/* Columna 1: Apoyado por (Nombre + Logo pequeño calibrado) */}
+          <div>
+            <h4 className="text-xs uppercase tracking-widest text-[#F4F0E6] font-semibold mb-3">
+              Apoyado por
+            </h4>
+            <ul className="mt-3 space-y-3">
+              {apoyadoPor.map((item) => (
+                <li
+                  key={item.nombre}
+                  className="flex items-center gap-3 font-sans text-sm text-[#F4F0E6]/85 transition-opacity hover:opacity-100 min-h-[36px]"
+                >
+                  {item.logo ? (
+                    <img
+                      src={item.logo}
+                      alt={item.alt}
+                      className={`${item.imgClasses} w-auto object-contain filter brightness-125 contrast-110 drop-shadow-[0_1px_3px_rgba(0,0,0,0.5)] flex-shrink-0`}
+                    />
+                  ) : (
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#F4F0E6]/60 flex-shrink-0 ml-1"></span>
+                  )}
+                  <span>{item.nombre}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-        <div className="md:text-center lg:text-center">
-          <h3 className="font-serif text-3xl text-[#F4F0E6]">Archivo Táchira</h3>
-          <p className="mx-auto mt-2 max-w-xs font-sans text-sm leading-relaxed text-[#F4F0E6]/70">
-            Folklore y Patrimonio. Un archivo digital colaborativo del Museo
-            del Táchira para preservar el oficio y la historia de nuestros
-            cultores.
-          </p>
-        </div>
+          {/* Columna 2: Identidad Institucional */}
+          <div className="md:text-center lg:text-center flex flex-col items-center">
+            <h3 className="font-serif text-xl sm:text-2xl text-[#F4F0E6] tracking-wide leading-snug">
+              Archivo Regional del Folklore y Patrimonio Cultural «Luis Felipe Ramón y Rivera»
+            </h3>
+            <p className="mt-3 max-w-sm font-sans text-sm leading-relaxed text-[#F4F0E6]/80">
+              Un archivo digital colaborativo del Museo del Táchira para preservar el oficio y la historia de nuestros cultores.
+            </p>
+          </div>
 
-        <div className="lg:text-right">
-          <h4 className="text-xs uppercase tracking-widest text-[#F4F0E6]">
-            Realizado por
-          </h4>
-          <p className="mt-2 font-sans text-sm italic text-[#F4F0E6]/60">
-            Estudiantes De la UNEFA - Carrera Ing. De Sistemas
-          </p>
-          <ul className="mt-3 space-y-2">
-            {equipoDesarrollo.map((nombre) => (
-              <li
-                key={nombre}
-                className="font-sans text-sm text-[#F4F0E6]/70 transition-opacity hover:opacity-100"
-              >
-                {nombre}
-              </li>
-            ))}
-          </ul>
+          {/* Columna 3: Realizado por */}
+          <div className="lg:text-right">
+            <h4 className="text-xs uppercase tracking-widest text-[#F4F0E6] font-semibold mb-2">
+              Realizado por
+            </h4>
+            <p className="mt-1 font-sans text-sm italic text-[#F4F0E6]/70">
+              Estudiantes de la UNEFA - Carrera Ing. de Sistemas
+            </p>
+            <ul className="mt-3 space-y-1.5">
+              {equipoDesarrollo.map((nombre) => (
+                <li
+                  key={nombre}
+                  className="font-sans text-sm text-[#F4F0E6]/80 transition-opacity hover:opacity-100"
+                >
+                  {nombre}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
 
       <div className="relative z-10 border-t border-[#F4F0E6]/10 px-6 py-4 text-center font-sans text-xs text-[#F4F0E6]/60">
-        © {new Date().getFullYear()} Museo del Táchira · Archivo regional de folklore y patrimonio cultural "Luis Felipe Ramón y Rivera"
+        © {new Date().getFullYear()} Museo del Táchira · Archivo Regional del Folklore y Patrimonio Cultural «Luis Felipe Ramón y Rivera»
       </div>
     </footer>
   )
 }
 
 export default Footer
+
+
