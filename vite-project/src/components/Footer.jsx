@@ -1,13 +1,14 @@
 import logoGobernacion from '../assets/logos/logo_gobernacion.png'
 import logoMuseo from '../assets/logos/logo_museo.png'
 import logoDireccionCultura from '../assets/logos/logo_direccion_cultura.png'
+import logoUnefa from '../assets/logos/logo_unefa.png'
 
 const apoyadoPor = [
   {
     nombre: 'Dirección de Cultura',
     logo: logoDireccionCultura,
     alt: 'Logo Dirección de Cultura',
-    imgClasses: 'h-7 sm:h-8 max-w-[100px]',
+    imgClasses: 'h-10 sm:h-11 max-w-[130px]',
   },
   {
     nombre: 'Museo del Táchira',
@@ -19,11 +20,13 @@ const apoyadoPor = [
     nombre: 'Gobernación del Estado Táchira',
     logo: logoGobernacion,
     alt: 'Logo Gobernación del Estado Táchira',
-    imgClasses: 'h-9 sm:h-[42px] max-w-[150px]',
+    imgClasses: 'h-11 sm:h-[50px] max-w-[180px]',
   },
   {
     nombre: 'UNEFA',
-    logo: null,
+    logo: logoUnefa,
+    alt: 'Logo UNEFA',
+    imgClasses: 'h-11 sm:h-12 max-w-[100px]',
   },
 ]
 
@@ -94,7 +97,7 @@ function Footer() {
           {/* Columna 2: Identidad Institucional */}
           <div className="md:text-center lg:text-center flex flex-col items-center">
             <h3 className="font-serif text-xl sm:text-2xl text-[#F4F0E6] tracking-wide leading-snug">
-              Archivo Regional del Folklore y Patrimonio Cultural «Luis Felipe Ramón y Rivera»
+              Archivo Regional del Folklore y Patrimonio Cultural "Luis Felipe Ramón y Rivera"
             </h3>
             <p className="mt-3 max-w-sm font-sans text-sm leading-relaxed text-[#F4F0E6]/80">
               Un archivo digital colaborativo del Museo del Táchira para preservar el oficio y la historia de nuestros cultores.
@@ -124,12 +127,13 @@ function Footer() {
       </div>
 
       <div className="relative z-10 border-t border-[#F4F0E6]/10 px-6 py-4 text-center font-sans text-xs text-[#F4F0E6]/60">
-        © {new Date().getFullYear()} Museo del Táchira · Archivo Regional del Folklore y Patrimonio Cultural «Luis Felipe Ramón y Rivera»
+        © {new Date().getFullYear()} Museo del Táchira · Archivo Regional del Folklore y Patrimonio Cultural "Luis Felipe Ramón y Rivera"
       </div>
     </footer>
   )
 }
 
 export default Footer
+
 
 

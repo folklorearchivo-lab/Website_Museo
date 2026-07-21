@@ -56,7 +56,7 @@ function MapSection() {
         `
       <div style="font-family: 'Plus Jakarta Sans', sans-serif; color: #291804; padding: 4px;">
         <h4 style="font-weight: 700; margin: 0; font-size: 14px;">Museo del Táchira</h4>
-        <p style="margin: 4px 0 0 0; font-size: 11px; color: #807471;">Hacienda Paramillo · Archivo Regional del Folklore y Patrimonio Cultural «Luis Felipe Ramón y Rivera»</p>
+        <p style="margin: 4px 0 0 0; font-size: 11px; color: #807471;">Hacienda Paramillo · Archivo Regional del Folklore y Patrimonio Cultural "Luis Felipe Ramón y Rivera"</p>
       </div>
     `
       )
@@ -111,7 +111,7 @@ function MapSection() {
             <div className="mt-6 h-px w-20 bg-[#B4533C]/40" />
 
             <p className="mt-6 font-sans text-base text-cafe-noir/80 leading-relaxed">
-              El Archivo Regional del Folklore y Patrimonio Cultural «Luis Felipe Ramón y Rivera» se encuentra ubicado en las históricas instalaciones de la Hacienda Paramillo, sede del Museo del Táchira. Ven a conocer nuestras colecciones físicas y material histórico recopilado.
+              El Archivo Regional del Folklore y Patrimonio Cultural "Luis Felipe Ramón y Rivera" se encuentra ubicado en las históricas instalaciones de la Hacienda Paramillo, sede del Museo del Táchira. Ven a conocer nuestras colecciones físicas y material histórico recopilado.
             </p>
 
             {/* Ficha de Detalles de Contacto */}

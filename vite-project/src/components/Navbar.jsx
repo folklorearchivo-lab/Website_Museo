@@ -163,16 +163,16 @@ function Navbar({ onOpenRegister, onOpenLogin, onOpenPanel }) {
 
   return (
     <header className={`fixed top-0 left-0 z-50 w-full transition-all duration-300 ${scrolled ? 'bg-linen/95 backdrop-blur-xl shadow-sm shadow-cafe-noir/10' : 'bg-linen/5 backdrop-blur-md'}`}>
-      <nav className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <nav className="w-full max-w-[1400px] mx-auto px-3 sm:px-5 lg:px-6">
         <div className="flex justify-between items-center w-full py-3">
-          <a href="#inicio" className="flex items-center gap-2.5 mr-4 lg:mr-8 shrink-0" onClick={cerrarMenu}>
+          <a href="#inicio" className="flex items-center gap-2.5 mr-2 lg:mr-4 shrink-0" onClick={cerrarMenu}>
             <img src={logoM} alt="Museo del Táchira" className="h-10 sm:h-12 w-auto" />
             <div className="flex flex-col justify-center leading-tight">
               <span className={`font-serif text-sm sm:text-base md:text-lg font-bold tracking-tight whitespace-nowrap transition-colors ${scrolled ? 'text-cafe-noir' : 'text-linen [text-shadow:0_1px_10px_rgba(41,24,4,0.7)]'}`}>
                 Archivo Regional del Folklore
               </span>
               <span className={`font-sans text-[9px] sm:text-[11px] tracking-wider font-medium opacity-90 whitespace-nowrap transition-colors ${scrolled ? 'text-[#B4533C]' : 'text-warm-sand [text-shadow:0_1px_6px_rgba(41,24,4,0.7)]'}`}>
-                «Luis Felipe Ramón y Rivera»
+                "Luis Felipe Ramón y Rivera"
               </span>
             </div>
           </a>

@@ -52,7 +52,7 @@ function LoginForm({ isOpen, onClose }) {
         </button>
 
         <span className="font-sans text-xs uppercase tracking-[0.1em] text-cafe-noir/80">
-          {configWeb?.login_top_label || 'Archivo Regional del Folklore y Patrimonio Cultural «Luis Felipe Ramón y Rivera»'}
+          {configWeb?.login_top_label || 'Archivo Regional del Folklore y Patrimonio Cultural "Luis Felipe Ramón y Rivera"'}
         </span>
         <h2 className="mt-2 font-serif text-3xl text-cafe-noir">
           {configWeb?.login_titulo || 'Iniciar Sesión'}

@@ -69,7 +69,7 @@ function ResetPassword() {
       {/* Tarjeta del formulario, flotando sobre el fondo */}
       <div className="relative z-10 w-full max-w-md rounded-[2rem] bg-[#F4F0E6] p-8 shadow-2xl shadow-black/30 sm:p-10 text-center">
         <span className="font-sans text-xs uppercase tracking-[0.1em] text-cafe-noir/80">
-          Archivo Regional del Folklore y Patrimonio Cultural «Luis Felipe Ramón y Rivera»
+          Archivo Regional del Folklore y Patrimonio Cultural "Luis Felipe Ramón y Rivera"
         </span>
         <h2 className="mt-2 font-serif text-3xl text-cafe-noir">
           Restablecer Contraseña
